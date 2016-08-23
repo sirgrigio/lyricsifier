@@ -1,8 +1,7 @@
 import logging
 import lyricsifier
 import unittest
-from lyricsifier import crawler
-from lyricsifier.crawler import LyricsComCrawler, LyricsModeCrawler
+from lyricsifier.core.crawler import LyricsComCrawler, LyricsModeCrawler
 
 
 class TestCrawlers(unittest.TestCase):

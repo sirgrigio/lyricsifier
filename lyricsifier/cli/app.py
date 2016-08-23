@@ -1,7 +1,9 @@
 import logging
+import lyricsifier
 from cement.core.foundation import CementApp
 from cement.core.controller import CementBaseController, expose
 from cement.utils.misc import init_defaults
+from lyricsifier.core.crawler import CrawlJob
 
 
 class BaseController(CementBaseController):
@@ -28,7 +30,8 @@ class CrawlController(CementBaseController):
     @expose(help="crawl lyrics of given tracks")
     def crawl(self):
         if self.app.pargs.outdir:
-            pass
+            job = CrawlJob(self.app.pargs.tracks[0], self.app.pargs.outdir)
+            job.run()
         else:
             self.app.log.warning('missing output directory')
 
@@ -45,7 +48,7 @@ def configure_log(level=logging.DEBUG):
     handler = logging.StreamHandler()
     handler.setLevel(level)
     formatter = logging.Formatter(
-        '%(asctime)s %(levelname)-8s %(name)s : %(message)s')
+        '%(asctime)s (%(levelname)s) %(name)s : %(message)s')
     handler.setFormatter(formatter)
     log = logging.getLogger('lyricsifier')
     log.setLevel(level)

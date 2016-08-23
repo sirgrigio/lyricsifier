@@ -1,4 +1,5 @@
 import logging
+import re
 import urllib2
 from bs4 import BeautifulSoup
 
@@ -8,11 +9,12 @@ class LyricsComCrawler:
     def __init__(self):
         self.baseUrl = 'http://www.lyrics.com'
         self.lyricsUrlPattern = '{:s}/{:s}-lyrics-{:s}.html'
+        self.normalizingRegex = re.compile('[^a-zA-Z0-9]')
         self.logger = logging.getLogger('lyricsifier.crawler.LyricsComCrawler')
 
     def _formatLyricsUrl(self, artist, song):
-        a = artist.lower().replace(' ', '-')
-        s = song.lower().replace(' ', '-')
+        a = re.sub(' +', '-', self.normalizingRegex.sub(' ', artist)).lower()
+        s = re.sub(' +', '-', self.normalizingRegex.sub(' ', song)).lower()
         return self.lyricsUrlPattern.format(self.baseUrl, s, a)
 
     def crawl(self, artist, song):
@@ -43,11 +45,12 @@ class LyricsModeCrawler:
     def __init__(self):
         self.baseUrl = 'http://www.lyricsmode.com'
         self.lyricsUrlPattern = '{:s}/lyrics/{:1}/{:s}/{:s}.html'
+        self.normalizingRegex = re.compile('[^a-zA-Z0-9]')
         self.logger = logging.getLogger('lyricsifier.crawler.LyricsModeCrawler')
 
     def _formatLyricsUrl(self, artist, song):
-        a = artist.lower().replace(' ', '_')
-        s = song.lower().replace(' ', '_')
+        a = re.sub(' +', '-', self.normalizingRegex.sub(' ', artist)).lower()
+        s = re.sub(' +', '-', self.normalizingRegex.sub(' ', song)).lower()
         return self.lyricsUrlPattern.format(self.baseUrl, a[0], a, s)
 
     def crawl(self, artist, song):

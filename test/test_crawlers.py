@@ -17,9 +17,27 @@ class TestCrawlers(unittest.TestCase):
     def test_fail(self):
         print
         artist = 'NoArtistWithThisName' 
-        song = 'NoSongWithThisTitle'
+        title = 'NoSongWithThisTitle'
         for crawler in self.crawlers:
-            self.assertIsNone(crawler.crawl(artist, song))
+            self.assertIsNone(crawler.crawl(artist, title))
+
+    def test_ok(self):
+        print
+        artist = 'Britney Spears'
+        title = 'Make Me... (feat. G-Eazy)'
+        for crawler in self.crawlers:
+            self.assertIsNotNone(crawler.crawl(artist, title))
+
+
+class TestCrawlersLimit(unittest.TestCase):
+
+    def _configureLogging(self):
+        logging.basicConfig(level=logging.DEBUG,
+                            format='%(asctime)s %(name)-38s %(levelname)-8s %(message)s',)
+
+    def setUp(self):
+        self._configureLogging()
+        self.crawlers = [LyricsComCrawler()]
 
     def test_limit(self):
         print

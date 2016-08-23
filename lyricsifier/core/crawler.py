@@ -94,10 +94,11 @@ class LyricsModeCrawler:
 
 class CrawlJob:
 
-    def __init__(self, tsv, outdir, crawlers=[LyricsComCrawler(), ]):
+    def __init__(self, tsv, outdir, crawlers=[LyricsComCrawler(), ], attempts=3):
         self.fin = tsv
         self.fout = os.path.join(outdir, 'lyrics.txt')
         self.crawlers = crawlers
+        self.attempts = attempts
         self.outTsvFields = ['trackid', 'lyrics']
         self.normalizingRegex = re.compile('[^a-zA-Z0-9]')
         self.logger = logging.getLogger('lyricsifier.crawler.CrawlJob')
@@ -124,7 +125,17 @@ class CrawlJob:
                 title = row['title']
                 self.logger.info('processing track {} (artist: {}, title: {})'.format(id, artist, title))
                 for crawler in self.crawlers:
-                    lyrics = crawler.crawl(artist, title)
+                    i = 0
+                    error = True
+                    lyrics = None
+                    while error and i < self.attempts: 
+                        try:
+                            i += 1
+                            self.logger.info('attempt {:d} with {}'.format(i, crawler))
+                            lyrics = crawler.crawl(artist, title)
+                            error = False
+                        except urllib2.HTTPError as e:
+                            self.logger.error('error {} {}'.format(e.code, e.reason))
                     if lyrics:
                         self.logger.info('lyrics for {} retrieved by {}'.format(id, crawler))
                         lyrics = self._inline(crawler.stripLyricsAuthor(lyrics))

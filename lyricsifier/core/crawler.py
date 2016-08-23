@@ -119,34 +119,37 @@ class CrawlJob:
             count = 0
             found = 0
             for row in reader:
+                count += 1
                 self.logger.info('reading row {:d}'.format(count))
                 id = row['trackid']
                 artist = row['artist']
                 title = row['title']
                 self.logger.info('processing track {} (artist: {}, title: {})'.format(id, artist, title))
-                for crawler in self.crawlers:
-                    i = 0
-                    error = True
-                    lyrics = None
-                    while error and i < self.attempts: 
-                        try:
-                            i += 1
-                            self.logger.info('attempt {:d} with {}'.format(i, crawler))
-                            lyrics = crawler.crawl(artist, title)
-                            error = False
-                        except urllib2.HTTPError as e:
-                            self.logger.error('error {} {}'.format(e.code, e.reason))
-                    if lyrics:
-                        self.logger.info('lyrics for {} retrieved by {}'.format(id, crawler))
-                        lyrics = self._inline(crawler.stripLyricsAuthor(lyrics))
-                        self.logger.debug('postprocessing - {}'.format(lyrics))
-                        writer.writerow({'trackid': id, 'lyrics': lyrics})
-                        self.logger.info('lyrics for {} written to output file'.format(id))
-                        found += 1
-                        self.logger.info('currently {} lyrics found'.format(found))
-                        break
-                    else:
-                        self.logger.warning('{} cannot retrieve lyrics'.format(crawler))
-                count += 1
+                if not id or not artist or not title:
+                    self.logger.warning('incomplete data - skipping track')
+                else:
+                    for crawler in self.crawlers:
+                        i = 0
+                        error = True
+                        lyrics = None
+                        while error and i < self.attempts: 
+                            try:
+                                i += 1
+                                self.logger.info('attempt {:d} with {}'.format(i, crawler))
+                                lyrics = crawler.crawl(artist, title)
+                                error = False
+                            except urllib2.HTTPError as e:
+                                self.logger.error('error {} {}'.format(e.code, e.reason))
+                        if lyrics:
+                            self.logger.info('lyrics for {} retrieved by {}'.format(id, crawler))
+                            lyrics = self._inline(crawler.stripLyricsAuthor(lyrics))
+                            self.logger.debug('postprocessing - {}'.format(lyrics))
+                            writer.writerow({'trackid': id, 'lyrics': lyrics})
+                            self.logger.info('lyrics for {} written to output file'.format(id))
+                            found += 1
+                            self.logger.info('currently {:d} lyrics found'.format(found))
+                            break
+                        else:
+                            self.logger.warning('{} cannot retrieve lyrics'.format(crawler))
             self.logger.info('found {:d} lyrics out of {:d} tracks'.format(found, count))
             self.logger.info('job completed')

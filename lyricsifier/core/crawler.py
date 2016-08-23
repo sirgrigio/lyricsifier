@@ -12,13 +12,13 @@ class LyricsComCrawler:
         self.normalizingRegex = re.compile('[^a-zA-Z0-9]')
         self.logger = logging.getLogger('lyricsifier.crawler.LyricsComCrawler')
 
-    def _formatLyricsUrl(self, artist, song):
+    def _formatLyricsUrl(self, artist, title):
         a = re.sub(' +', '-', self.normalizingRegex.sub(' ', artist)).lower()
-        s = re.sub(' +', '-', self.normalizingRegex.sub(' ', song)).lower()
-        return self.lyricsUrlPattern.format(self.baseUrl, s, a)
+        t = re.sub(' +', '-', self.normalizingRegex.sub(' ', title)).lower()
+        return self.lyricsUrlPattern.format(self.baseUrl, t, a)
 
-    def crawl(self, artist, song):
-        requestUrl = self._formatLyricsUrl(artist, song)
+    def crawl(self, artist, title):
+        requestUrl = self._formatLyricsUrl(artist, title)
         self.logger.info('retrieving lyrics at url {:s}'.format(requestUrl))
 
         request = urllib2.Request(requestUrl)
@@ -48,13 +48,13 @@ class LyricsModeCrawler:
         self.normalizingRegex = re.compile('[^a-zA-Z0-9]')
         self.logger = logging.getLogger('lyricsifier.crawler.LyricsModeCrawler')
 
-    def _formatLyricsUrl(self, artist, song):
+    def _formatLyricsUrl(self, artist, title):
         a = re.sub(' +', '-', self.normalizingRegex.sub(' ', artist)).lower()
-        s = re.sub(' +', '-', self.normalizingRegex.sub(' ', song)).lower()
-        return self.lyricsUrlPattern.format(self.baseUrl, a[0], a, s)
+        t = re.sub(' +', '-', self.normalizingRegex.sub(' ', title)).lower()
+        return self.lyricsUrlPattern.format(self.baseUrl, a[0], a, t)
 
-    def crawl(self, artist, song):
-        requestUrl = self._formatLyricsUrl(artist, song)
+    def crawl(self, artist, title):
+        requestUrl = self._formatLyricsUrl(artist, title)
         self.logger.info('retrieving lyrics at url {:s}'.format(requestUrl))
 
         request = urllib2.Request(requestUrl)

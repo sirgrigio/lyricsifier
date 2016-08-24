@@ -12,21 +12,29 @@ class TestCrawlers(unittest.TestCase):
 
     def setUp(self):
         self._configureLogging()
-        self.crawlers = [LyricsComCrawler()]
+        self.crawlers = [LyricsComCrawler(), LyricsModeCrawler()]
 
-    def test_fail(self):
+    def testFail(self):
         print
         artist = 'NoArtistWithThisName' 
         title = 'NoSongWithThisTitle'
         for crawler in self.crawlers:
             self.assertIsNone(crawler.crawl(artist, title))
 
-    def test_ok(self):
+    def testOkPlain(self):
         print
-        artist = 'Britney Spears'
-        title = 'Make Me... (feat. G-Eazy)'
+        artist = 'Alicia Keys'
+        title = 'No One'
         for crawler in self.crawlers:
             self.assertIsNotNone(crawler.crawl(artist, title))
+
+    def testOkSpecial(self):
+        print
+        tracks = [{'artist': 'AC/DC', 'title': 'T.N.T.'},
+                  {'artist': 'Justin Timberlake', 'title': 'Can\'t stop the feeling!'}]
+        for crawler in self.crawlers:
+            for track in tracks:
+                self.assertIsNotNone(crawler.crawl(track['artist'], track['title']))
 
 
 class TestCrawlersLimit(unittest.TestCase):

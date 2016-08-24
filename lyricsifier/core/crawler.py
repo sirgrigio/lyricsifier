@@ -15,8 +15,10 @@ class LyricsComCrawler:
         self.logger = logging.getLogger('lyricsifier.crawler.LyricsComCrawler')
 
     def _formatLyricsUrl(self, artist, title):
-        a = re.sub(' +', '-', self.normalizingRegex.sub('', artist)).lower()
-        t = re.sub(' +', '-', self.normalizingRegex.sub('', title)).lower()
+        a = re.sub(' +', '-', self.normalizingRegex.sub('', artist))
+        t = re.sub(' +', '-', self.normalizingRegex.sub('', title))
+        a = a.strip('-').lower()
+        t = t.strip('-').lower()
         return self.lyricsUrlPattern.format(self.baseUrl, t, a)
 
     def crawl(self, artist, title):
@@ -49,20 +51,26 @@ class LyricsModeCrawler:
 
     def __init__(self):
         self.baseUrl = 'http://www.lyricsmode.com'
+        self.requestHeaders = {'User-Agent': 'Mozilla/5.0'}
         self.lyricsUrlPattern = '{:s}/lyrics/{:1}/{:s}/{:s}.html'
-        self.normalizingRegex = re.compile('[^a-zA-Z0-9\s-]')
+        self.normalizingRegex = re.compile('[^a-zA-Z0-9\s_]')
         self.logger = logging.getLogger('lyricsifier.crawler.LyricsModeCrawler')
 
     def _formatLyricsUrl(self, artist, title):
-        a = re.sub(' +', '-', self.normalizingRegex.sub('', artist)).lower()
-        t = re.sub(' +', '-', self.normalizingRegex.sub('', title)).lower()
+        a = re.sub('[\.-/]', '_', artist)
+        t = re.sub('[\.-/]', '_', title)
+        t = re.sub(' +', '_', self.normalizingRegex.sub('', t))
+        a = re.sub('_+', '_', a)
+        t = re.sub('_+', '_', t)
+        a = a.strip('_').lower()
+        t = t.strip('_').lower()
         return self.lyricsUrlPattern.format(self.baseUrl, a[0], a, t)
 
     def crawl(self, artist, title):
         requestUrl = self._formatLyricsUrl(artist, title)
         self.logger.info('retrieving lyrics at url {:s}'.format(requestUrl))
 
-        request = urllib2.Request(requestUrl)
+        request = urllib2.Request(requestUrl, headers=self.requestHeaders)
         try:
             response = urllib2.urlopen(request)
             if requestUrl == response.geturl():

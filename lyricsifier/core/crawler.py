@@ -102,7 +102,9 @@ class LyricsModeCrawler:
 
 class CrawlJob:
 
-    def __init__(self, tsv, outdir, crawlers=[LyricsComCrawler(), ], attempts=3):
+    __crawlers__ = [LyricsComCrawler(), LyricsModeCrawler(), ]
+
+    def __init__(self, tsv, outdir, crawlers=__crawlers__, attempts=3):
         self.fin = tsv
         self.fout = os.path.join(outdir, 'lyrics.txt')
         self.crawlers = crawlers

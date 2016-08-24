@@ -65,6 +65,7 @@ class LyricsModeCrawler:
         t = unidecode(title)
         a = re.sub('[\.-/]', '_', a)
         t = re.sub('[\.-/]', '_', t)
+        a = re.sub(' +', '_', self.normalizingRegex.sub('', a))
         t = re.sub(' +', '_', self.normalizingRegex.sub('', t))
         a = re.sub('_+', '_', a)
         t = re.sub('_+', '_', t)

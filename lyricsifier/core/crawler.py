@@ -153,7 +153,7 @@ class CrawlJob:
                                 self.logger.error('error {} {}'.format(e.code, e.reason))
                         if lyrics:
                             self.logger.info('lyrics for {} retrieved by {}'.format(id, crawler))
-                            lyrics = self._inline(crawler.stripLyricsAuthor(lyrics))
+                            lyrics = self._inline(crawler.stripLyricsAuthor(lyrics.decode('utf8')))
                             self.logger.debug('postprocessing - {}'.format(lyrics))
                             writer.writerow({'trackid': id, 'lyrics': lyrics})
                             self.logger.info('lyrics for {} written to output file'.format(id))

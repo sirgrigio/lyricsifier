@@ -8,6 +8,59 @@ from bs4 import BeautifulSoup
 from unidecode import unidecode
 
 
+class MetroLyricsCrawler:
+
+    def __init__(self):
+        self.baseUrl = 'http://www.metrolyrics.com'
+        self.lyricsUrlPattern = '{:s}/{:s}-lyrics-{:s}.html'
+        self.normalizingRegex = re.compile('[^a-zA-Z0-9\s-]')
+        self.logger = logging.getLogger('lyricsifier.crawler.MetroLyricsCrawler')
+
+    def _formatLyricsUrl(self, artist, title):
+        a = unidecode(artist)
+        t = unidecode(title)
+        a = re.sub(' +', '-', self.normalizingRegex.sub('', a))
+        t = re.sub(' +', '-', self.normalizingRegex.sub('', t))
+        a = a.strip('-').lower()
+        t = t.strip('-').lower()
+        return self.lyricsUrlPattern.format(self.baseUrl, t, a)
+
+    def crawl(self, artist, title):
+        requestUrl = self._formatLyricsUrl(artist, title)
+        self.logger.info('retrieving lyrics at url {:s}'.format(requestUrl))
+
+        request = urllib.request.Request(requestUrl)
+        try:
+            response = urllib.request.urlopen(request)
+            if requestUrl == response.geturl():
+                html = response.read()
+                soup = BeautifulSoup(html, 'html.parser')
+                div = soup.find(id='lyrics-body-text')
+                if div:
+                    lyrics = b' '.join(
+                        [p.get_text().encode('utf8') 
+                         if p.get('id') != 'mid-song-discussion' else b'' for p in div.findChildren('p')])
+                    self.logger.debug('lyrics found\n{}'.format(lyrics))
+                    return lyrics
+                else:
+                    self.logger.warning('cannot find lyrics inside of html')
+                    return None
+            else:
+                self.logger.warning('redirect to {:s}'.format(response.geturl()))
+                self.logger.warning('cannot find lyrics')
+                return None
+        except urllib.error.HTTPError as error:
+            if error.code == 404:
+                self.logger.warning('error 404')
+                self.logger.warning('cannor find lyrics')
+                return None
+            else:
+                raise error
+
+    def stripLyricsAuthor(self, lyrics):
+        return lyrics
+
+
 class LyricsComCrawler:
 
     def __init__(self):
@@ -158,7 +211,7 @@ class AZLyricsCrawler:
 
 class CrawlJob:
 
-    __crawlers__ = [LyricsComCrawler(), LyricsModeCrawler(), AZLyricsCrawler()]
+    __crawlers__ = [MetroLyricsCrawler(), LyricsComCrawler(), LyricsModeCrawler(), AZLyricsCrawler()]
 
     def __init__(self, tsv, outdir, crawlers=__crawlers__, attempts=3):
         self.fin = tsv

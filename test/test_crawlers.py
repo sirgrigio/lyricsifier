@@ -8,28 +8,28 @@ class TestCrawlers(unittest.TestCase):
 
     def _configureLogging(self):
         logging.basicConfig(level=logging.DEBUG,
-                            format='%(asctime)s %(name)-38s %(levelname)-8s %(message)s',)
+                            format='%(asctime)s (%(levelname)s) %(name)s : %(message)s',)
 
     def setUp(self):
         self._configureLogging()
         self.crawlers = [LyricsComCrawler(), LyricsModeCrawler()]
 
     def testFail(self):
-        print
+        print()
         artist = 'NoArtistWithThisName' 
         title = 'NoSongWithThisTitle'
         for crawler in self.crawlers:
             self.assertIsNone(crawler.crawl(artist, title))
 
     def testOkPlain(self):
-        print
+        print()
         artist = 'Alicia Keys'
         title = 'No One'
         for crawler in self.crawlers:
             self.assertIsNotNone(crawler.crawl(artist, title))
 
     def testOkSpecial(self):
-        print
+        print()
         tracks = [{'artist': 'AC/DC', 'title': 'T.N.T.'},
                   {'artist': 'Justin Timberlake', 'title': 'Can\'t stop the feeling!'}]
         for crawler in self.crawlers:
@@ -41,7 +41,7 @@ class TestCrawlersLimit(unittest.TestCase):
 
     def _configureLogging(self):
         logging.basicConfig(level=logging.DEBUG,
-                            format='%(asctime)s %(name)-38s %(levelname)-8s %(message)s',)
+                            format='%(asctime)s (%(levelname)s) %(name)s : %(message)s',)
 
     def setUp(self):
         self._configureLogging()

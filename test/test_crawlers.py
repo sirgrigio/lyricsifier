@@ -53,7 +53,7 @@ class TestCrawlersLimit(unittest.TestCase):
         song = 'No One'
         for i in range(10000):
             for crawler in self.crawlers:
-                print '\n\n\n\n\n%-5d\t%s\n\n\n\n\n' % (i, crawler)
+                print('\n\n\n\n\n{:-5d}\t{}\n\n\n\n\n'.format(i, crawler))
                 self.assertIsNotNone(crawler.crawl(artist, song))
 
 if __name__ == '__main__':

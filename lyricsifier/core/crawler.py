@@ -2,7 +2,8 @@ import csv
 import logging
 import os
 import re
-import urllib2
+import urllib.request
+import urllib.error
 from bs4 import BeautifulSoup
 
 
@@ -25,8 +26,8 @@ class LyricsComCrawler:
         requestUrl = self._formatLyricsUrl(artist, title)
         self.logger.info('retrieving lyrics at url {:s}'.format(requestUrl))
 
-        request = urllib2.Request(requestUrl)
-        response = urllib2.urlopen(request)
+        request = urllib.request.Request(requestUrl)
+        response = urllib.request.urlopen(request)
         if requestUrl == response.geturl():
             html = response.read()
             soup = BeautifulSoup(html, 'html.parser')
@@ -70,9 +71,9 @@ class LyricsModeCrawler:
         requestUrl = self._formatLyricsUrl(artist, title)
         self.logger.info('retrieving lyrics at url {:s}'.format(requestUrl))
 
-        request = urllib2.Request(requestUrl, headers=self.requestHeaders)
+        request = urllib.request.Request(requestUrl, headers=self.requestHeaders)
         try:
-            response = urllib2.urlopen(request)
+            response = urllib.request.urlopen(request)
             if requestUrl == response.geturl():
                 html = response.read()
                 soup = BeautifulSoup(html, 'html.parser')
@@ -88,7 +89,7 @@ class LyricsModeCrawler:
                 self.logger.warning('redirect to {:s}'.format(response.geturl()))
                 self.logger.warning('cannot find lyrics')
                 return None
-        except urllib2.HTTPError as error:
+        except urllib.error.HTTPError as error:
             if error.code == 404:
                 self.logger.warning('error 404')
                 self.logger.warning('cannor find lyrics')
@@ -121,7 +122,7 @@ class CrawlJob:
         return re.sub(' +', ' ', l).lower()
 
     def run(self):
-        with open(self.fin, 'rb') as tsvin, open(self.fout, 'wb') as tsvout:
+        with open(self.fin, 'r', encoding='utf8') as tsvin, open(self.fout, 'w', encoding='utf8') as tsvout:
             reader = csv.DictReader(tsvin, delimiter='\t')
             writer = csv.DictWriter(tsvout, delimiter='\t', fieldnames=self.outTsvFields)
             writer.writeheader()
@@ -148,7 +149,7 @@ class CrawlJob:
                                 self.logger.info('attempt {:d} with {}'.format(i, crawler))
                                 lyrics = crawler.crawl(artist, title)
                                 error = False
-                            except urllib2.HTTPError as e:
+                            except urllib.error.HTTPError as e:
                                 self.logger.error('error {} {}'.format(e.code, e.reason))
                         if lyrics:
                             self.logger.info('lyrics for {} retrieved by {}'.format(id, crawler))
@@ -157,9 +158,8 @@ class CrawlJob:
                             writer.writerow({'trackid': id, 'lyrics': lyrics})
                             self.logger.info('lyrics for {} written to output file'.format(id))
                             found += 1
-                            self.logger.info('currently {:d} lyrics found'.format(found))
                             break
                         else:
                             self.logger.warning('{} cannot retrieve lyrics'.format(crawler))
-            self.logger.info('found {:d} lyrics out of {:d} tracks'.format(found, count))
+                self.logger.info('found {:d} lyrics out of {:d} tracks'.format(found, count))
             self.logger.info('job completed')

@@ -5,6 +5,7 @@ import re
 import urllib.request
 import urllib.error
 from bs4 import BeautifulSoup
+from unidecode import unidecode
 
 
 class LyricsComCrawler:
@@ -16,8 +17,10 @@ class LyricsComCrawler:
         self.logger = logging.getLogger('lyricsifier.crawler.LyricsComCrawler')
 
     def _formatLyricsUrl(self, artist, title):
-        a = re.sub(' +', '-', self.normalizingRegex.sub('', artist))
-        t = re.sub(' +', '-', self.normalizingRegex.sub('', title))
+        a = unidecode(artist)
+        t = unidecode(title)
+        a = re.sub(' +', '-', self.normalizingRegex.sub('', a))
+        t = re.sub(' +', '-', self.normalizingRegex.sub('', t))
         a = a.strip('-').lower()
         t = t.strip('-').lower()
         return self.lyricsUrlPattern.format(self.baseUrl, t, a)
@@ -58,8 +61,10 @@ class LyricsModeCrawler:
         self.logger = logging.getLogger('lyricsifier.crawler.LyricsModeCrawler')
 
     def _formatLyricsUrl(self, artist, title):
-        a = re.sub('[\.-/]', '_', artist)
-        t = re.sub('[\.-/]', '_', title)
+        a = unidecode(artist)
+        t = unidecode(title)
+        a = re.sub('[\.-/]', '_', a)
+        t = re.sub('[\.-/]', '_', t)
         t = re.sub(' +', '_', self.normalizingRegex.sub('', t))
         a = re.sub('_+', '_', a)
         t = re.sub('_+', '_', t)
@@ -118,7 +123,7 @@ class CrawlJob:
             os.makedirs(outdir)
 
     def _inline(self, lyrics):
-        l = self.normalizingRegex.sub(' ', lyrics)
+        l = self.normalizingRegex.sub(' ', unidecode(lyrics))
         return re.sub(' +', ' ', l).lower()
 
     def run(self):

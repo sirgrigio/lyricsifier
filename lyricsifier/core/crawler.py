@@ -124,7 +124,8 @@ class LyricsModeCrawler:
         t = re.sub('_+', '_', t)
         a = a.strip('_').lower()
         t = t.strip('_').lower()
-        return self.lyricsUrlPattern.format(self.baseUrl, a[0], a, t)
+        initial = a[0] if len(a) > 0 and re.match('[a-z]', a[0]) else '0-9'
+        return self.lyricsUrlPattern.format(self.baseUrl, initial, a, t)
 
     def crawl(self, artist, title):
         requestUrl = self._formatLyricsUrl(artist, title)

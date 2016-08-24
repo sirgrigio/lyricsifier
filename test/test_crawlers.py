@@ -1,7 +1,7 @@
 import logging
 import lyricsifier
 import unittest
-from lyricsifier.core.crawler import LyricsComCrawler, LyricsModeCrawler
+from lyricsifier.core.crawler import LyricsComCrawler, LyricsModeCrawler, AZLyricsCrawler
 
 
 class TestCrawlers(unittest.TestCase):
@@ -12,7 +12,7 @@ class TestCrawlers(unittest.TestCase):
 
     def setUp(self):
         self._configureLogging()
-        self.crawlers = [LyricsComCrawler(), LyricsModeCrawler()]
+        self.crawlers = [LyricsComCrawler(), LyricsModeCrawler(), AZLyricsCrawler()]
 
     def testFail(self):
         print()

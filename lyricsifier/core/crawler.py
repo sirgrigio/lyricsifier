@@ -106,9 +106,58 @@ class LyricsModeCrawler:
         return lyrics
 
 
+class AZLyricsCrawler:
+
+    def __init__(self):
+        self.baseUrl = 'http://www.azlyrics.com'
+        self.lyricsUrlPattern = '{:s}/lyrics/{:s}/{:s}.html'
+        self.normalizingRegex = re.compile('[^a-zA-Z0-9]')
+        self.logger = logging.getLogger('lyricsifier.crawler.AZLyricsCrawler')
+
+    def _formatLyricsUrl(self, artist, title):
+        a = unidecode(artist)
+        t = unidecode(title)
+        a = self.normalizingRegex.sub('', a).lower()
+        t = self.normalizingRegex.sub('', t).lower()
+        return self.lyricsUrlPattern.format(self.baseUrl, a, t)
+
+    def crawl(self, artist, title):
+        requestUrl = self._formatLyricsUrl(artist, title)
+        self.logger.info('retrieving lyrics at url {:s}'.format(requestUrl))
+
+        request = urllib.request.Request(requestUrl)
+        try:
+            response = urllib.request.urlopen(request)
+            if requestUrl == response.geturl():
+                html = response.read()
+                soup = BeautifulSoup(html, 'html.parser')
+                div = soup.find(class_='lyricsh').find_next('div', class_=None)
+                if div:
+                    lyrics = div.get_text().encode('utf8')
+                    self.logger.debug('lyrics found\n{}'.format(lyrics))
+                    return lyrics
+                else:
+                    self.logger.warning('cannot find lyrics inside of html')
+                    return None
+            else:
+                self.logger.warning('redirect to {:s}'.format(response.geturl()))
+                self.logger.warning('cannot find lyrics')
+                return None
+        except urllib.error.HTTPError as error:
+            if error.code == 404:
+                self.logger.warning('error 404')
+                self.logger.warning('cannor find lyrics')
+                return None
+            else:
+                raise error
+
+    def stripLyricsAuthor(self, lyrics):
+        return lyrics
+
+
 class CrawlJob:
 
-    __crawlers__ = [LyricsComCrawler(), LyricsModeCrawler(), ]
+    __crawlers__ = [LyricsComCrawler(), LyricsModeCrawler(), AZLyricsCrawler()]
 
     def __init__(self, tsv, outdir, crawlers=__crawlers__, attempts=3):
         self.fin = tsv

@@ -1,9 +1,7 @@
-import logging
-import lyricsifier
 from cement.core.foundation import CementApp
 from cement.ext.ext_argparse import ArgparseController, expose
-from cement.utils.misc import init_defaults
-from lyricsifier.core.crawler import CrawlJob
+from lyricsifier.core.crawler import MetroLyricsCrawler
+from lyricsifier.utils import logging
 
 
 class BaseController(ArgparseController):
@@ -26,25 +24,19 @@ class CrawlController(ArgparseController):
         pass
 
     @expose(
-        help="crawl lyrics of given tracks",
+        help="crawl lyrics URL from metrolyrics.com",
         arguments=[
             (['-o', '--outdir'],
-             dict(help='the output directory', action='store')),
-            (['-a', '--attempts'],
-             dict(help='the number of attempts allowed for each crawler (default 3)', action='store', default=3)),
-            (['tracks'],
-             dict(help='the tsv containing tracks id, artist and title', action='store', nargs=1)),
+             dict(
+                help='the output directory (default ./target/)',
+                action='store',
+                default='target')
+             ),
         ]
     )
     def crawl(self):
-        if self.app.pargs.outdir:
-            attempts = int(self.app.pargs.attempts)
-            job = CrawlJob(self.app.pargs.tracks[0], 
-                           self.app.pargs.outdir,
-                           attempts=attempts)
-            job.run()
-        else:
-            self.app.log.warning('missing output directory')
+        crawler = MetroLyricsCrawler(self.app.pargs.outdir)
+        crawler.crawl()
 
 
 class LyricsifierApp(CementApp):
@@ -55,21 +47,9 @@ class LyricsifierApp(CementApp):
         handlers = [BaseController, CrawlController]
 
 
-def configure_log(level=logging.DEBUG):
-    handler = logging.StreamHandler()
-    handler.setLevel(level)
-    formatter = logging.Formatter(
-        '%(asctime)s (%(levelname)s) %(name)s : %(message)s')
-    handler.setFormatter(formatter)
-    log = logging.getLogger('lyricsifier')
-    log.setLevel(level)
-    log.addHandler(handler)
-
-
 def main():
     with LyricsifierApp() as app:
-        logLevel = logging.DEBUG if app.debug else logging.WARNING
-        configure_log(logLevel)
+        logging.loadCfg()
         app.setup()
         app.run()
 

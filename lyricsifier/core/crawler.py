@@ -52,12 +52,13 @@ class MetroLyricsCrawler:
                 time.sleep(delay)
         return None
 
-    def __init__(self, fout, max_delay):
+    def __init__(self, fout, max_delay, max_depth=100):
         self.base_url = 'http://www.metrolyrics.com'
         self.artists_index = ['1'] + list(ascii_lowercase)
         self.artists_page_pattern = self.base_url + '/artists-{:s}-{:d}.html'
         self.fout = os.path.abspath(fout)
         self.max_delay = max_delay
+        self.max_depth = max_depth
         self.tsv_headers = ['url', 'artist', 'title']
         self.log = logging.getLogger(__name__)
         self.__createOutDirIfNotExists()
@@ -135,6 +136,9 @@ class MetroLyricsCrawler:
                     self.log.warning(
                         'cannot crawl from {:s} - skipping'.format(url))
                 page += 1
+                if page > self.max_depth:
+                    self.log.warning('reached max depth - skipping')
+                    break
                 url, response = self._requestSongsPage(songs_pattern, page)
             if response:
                 self.log.info(
@@ -158,6 +162,9 @@ class MetroLyricsCrawler:
                     self.log.warning(
                         'cannot crawl from {:s} - skipping'.format(url))
                 page += 1
+                if page > self.max_depth:
+                    self.log.warning('reached max depth - skipping')
+                    break
                 url, response = self._requestArtistsPage(idx, page)
             if response:
                 self.log.info('no more page for index \'{:s}\''.format(idx))

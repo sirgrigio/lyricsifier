@@ -32,10 +32,16 @@ class CrawlController(ArgparseController):
                 action='store',
                 default='./target/metrolyrics.txt')
              ),
+            (['-d', '--max-delay'],
+             dict(
+                help='the max amount of seconds between two requests (default 300)',
+                action='store',
+                default=300)
+             ),
         ]
     )
     def crawl(self):
-        crawler = MetroLyricsCrawler(self.app.pargs.output_file)
+        crawler = MetroLyricsCrawler(self.app.pargs.output_file, int(self.app.pargs.max_delay))
         crawler.crawl()
 
 

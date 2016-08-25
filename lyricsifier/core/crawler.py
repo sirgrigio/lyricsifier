@@ -10,10 +10,13 @@ from string import ascii_lowercase
 
 class MetroLyricsCrawler:
 
-    def _createOutDirIfNotExists(self, outdir):
-        if not os.path.exists(outdir):
-            self.log.warning('output directory does not exist - creating it')
-            os.makedirs(outdir)
+    def _createOutDirIfNotExists(self):
+        directory = os.path.dirname(self.fout)
+        if not os.path.exists(directory):
+            self.log.warning(
+                'output directory {:s} does not exist - creating it'.format(
+                    directory))
+            os.makedirs(directory)
 
     def _writeTSVHeader(self):
         with open(self.fout, 'w', encoding='utf8') as tsvout:
@@ -31,18 +34,23 @@ class MetroLyricsCrawler:
                                     fieldnames=self.tsv_headers)
             writer.writerows(rows)
 
-    def __init__(self, outdir):
+    def _rreplace(self, s, old, new, occurrence=1):
+        li = s.rsplit(old, occurrence)
+        return new.join(li)
+
+
+    def __init__(self, fout):
         self.base_url = 'http://www.metrolyrics.com'
-        self.artists_index = [1] + list(ascii_lowercase)
+        self.artists_index = ['1'] + list(ascii_lowercase)
         self.artists_page_pattern = self.base_url + '/artists-{:s}-{:d}.html'
-        self.fout = os.path.join(outdir, 'lyrics.txt')
+        self.fout = os.path.abspath(fout)
         self.tsv_headers = ['url', 'artist', 'title']
         self.log = logging.getLogger(__name__)
-        self._createOutDirIfNotExists(outdir)
+        self._createOutDirIfNotExists()
         self._writeTSVHeader()
 
     def _requestArtistsPage(self, idx, page):
-        url = self.artists_page_pattern.format(idx, page)
+        url = self.artists_page_pattern.format(str(idx), page)
         self.log.info('requesting URL {:s}'.format(url))
         request = urllib.request.Request(url)
         return url, urllib.request.urlopen(request)
@@ -55,11 +63,7 @@ class MetroLyricsCrawler:
 
     def _extractArtistName(self, a_elem):
         text = a_elem.get_text().encode('utf8')
-        name = re.sub(
-            b' Lyrics$',
-            b'',
-            text.rstrip([b'\n', b'\r', b'\s', b'\t'])
-        )
+        name = self._rreplace(text, b' Lyrics', b'').strip(b'\n\r\s\t')
         self.log.debug(
             'artist name {} extracted from {:s}'.format(
                 name.decode('utf8'), a_elem.prettify()))
@@ -75,15 +79,11 @@ class MetroLyricsCrawler:
 
     def _extractSongTitle(self, a_elem):
         text = a_elem.get_text().encode('utf8')
-        name = re.sub(
-            b' Lyrics$',
-            b'',
-            text.rstrip([b'\n', b'\r', b'\s', b'\t'])
-        )
+        title = self._rreplace(text, b' Lyrics', b'').strip(b'\n\r\s\t')
         self.log.debug(
             'song title {} extracted from {:s}'.format(
-                name.decode('utf8'), a_elem.prettify()))
-        return name
+                title.decode('utf8'), a_elem.prettify()))
+        return title
 
     def _parseSongsTable(self, artist, table):
         self.log.info('parsing songs table')
@@ -94,8 +94,8 @@ class MetroLyricsCrawler:
             lyrics_url = song_a['href']
             output_rows.append(
                 {'url': lyrics_url,
-                 'artist': artist,
-                 'title': title}
+                 'artist': artist.decode('utf8'),
+                 'title': title.decode('utf8')}
             )
             self.log.info('new lyrics URL crawled - {:s}'.format(lyrics_url))
         self._bulkWriteTSVRows(output_rows)
@@ -105,24 +105,28 @@ class MetroLyricsCrawler:
         for row in table.tbody.findAll('tr'):
             artist_a = row.find('td').find_next('a', href=True)
             artist = self._extractArtistName(artist_a)
-            songs_pattern = self._extractArtistSongsURLPattern(artist_a)
-            s_page = 1
-            url, response = self._requestSongsPage(songs_pattern, s_page)
+            songs_pattern = self._extractArtistSongsPagePattern(artist_a)
+            page = 1
+            url, response = self._requestSongsPage(songs_pattern, page)
             while url == response.geturl():
                 html = response.read()
                 soup = BeautifulSoup(html, 'html.parser')
-                table = soup.find('table', class_='songs-table-compact')
+                table = soup.find('table', class_='songs-table compact')
                 if table:
                     self._parseSongsTable(artist, table)
                 else:
                     self.log.warning(
                         'cannot crawl from {:s} - skipping'.format(url))
+                page += 1
+                url, response = self._requestSongsPage(songs_pattern, page)
+            self.log.info(
+                'no more songs for artist {:s}'.format(artist.decode('utf8')))
 
     def crawl(self):
         for idx in self.artists_index:
-            self.log.info('crawling index {:s}'.format(idx))
-            a_page = 1
-            url, response = self._requestArtistsPage(idx, a_page)
+            self.log.info('crawling index \'{:s}\''.format(idx))
+            page = 1
+            url, response = self._requestArtistsPage(idx, page)
             while url == response.geturl():
                 html = response.read()
                 soup = BeautifulSoup(html, 'html.parser')
@@ -132,5 +136,6 @@ class MetroLyricsCrawler:
                 else:
                     self.log.warning(
                         'cannot crawl from {:s} - skipping'.format(url))
-                url, response = self._requestArtistsPage(idx, ++a_page)
-            self.log.info('no more page for index {:s}'.format(idx))
+                page += 1
+                url, response = self._requestArtistsPage(idx, page)
+            self.log.info('no more page for index \'{:s}\''.format(idx))

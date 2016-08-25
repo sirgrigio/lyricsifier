@@ -26,16 +26,16 @@ class CrawlController(ArgparseController):
     @expose(
         help="crawl lyrics URL from metrolyrics.com",
         arguments=[
-            (['-o', '--outdir'],
+            (['-o', '--output-file'],
              dict(
-                help='the output directory (default ./target/)',
+                help='the output file (default ./target/metrolyrics.txt)',
                 action='store',
-                default='target')
+                default='./target/metrolyrics.txt')
              ),
         ]
     )
     def crawl(self):
-        crawler = MetroLyricsCrawler(self.app.pargs.outdir)
+        crawler = MetroLyricsCrawler(self.app.pargs.output_file)
         crawler.crawl()
 
 

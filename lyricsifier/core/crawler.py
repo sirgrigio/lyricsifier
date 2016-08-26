@@ -39,17 +39,29 @@ class MetroLyricsCrawler:
         li = s.rsplit(old, occurrence)
         return new.join(li)
 
+    def __sleep(self, secs):
+        self.log.warning(
+            'going to sleep for {:d} seconds'.format(secs))
+        time.sleep(secs)
+
     def __open(self, request):
         delay = 1
         while delay < self.max_delay:
             try:
                 return urllib.request.urlopen(request)
-            except Exception as e:
+            except urllib.error.HTTPError as e:
+                self.log.error(e)
+                if 400 <= e.code < 500:
+                    return None
+                delay *= 2
+                self.__sleep(delay)
+            except urllib.error.URLError as e:
                 self.log.error(e)
                 delay *= 2
-                self.log.warning(
-                    'going to sleep for {:d} seconds'.format(delay))
-                time.sleep(delay)
+                self.__sleep(delay)
+            except Exception as e:
+                self.log.error(e)
+                return None
         return None
 
     def __init__(self, fout, max_delay, max_depth=100):

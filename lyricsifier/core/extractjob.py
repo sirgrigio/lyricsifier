@@ -80,7 +80,8 @@ class ExtractWorker(threading.Thread):
                 lyrics = self._extract(url, extractor)
                 if lyrics:
                     lyrics = self._normalize(lyrics.decode('utf8'))
-                    self.log.debug('lyrics normalized - {:s}'.format(lyrics))
+                    self.log.debug(
+                        'lyrics normalized - {}'.format(lyrics.encode('utf8')))
                     self.log.info('writing data to output file')
                     writer.writerow(
                         {'url': url,

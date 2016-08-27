@@ -1,6 +1,7 @@
 from cement.core.foundation import CementApp
 from cement.ext.ext_argparse import ArgparseController, expose
 from lyricsifier.core.crawler import MetroLyricsCrawler
+from lyricsifier.core.extractjob import ExtractJob
 from lyricsifier.utils import logging
 
 
@@ -45,12 +46,43 @@ class CrawlController(ArgparseController):
         crawler.crawl()
 
 
+class ExtractController(ArgparseController):
+    class Meta:
+        label = 'extract'
+        stacked_on = 'base'
+
+    @expose(hide=True)
+    def default(self):
+        pass
+
+    @expose(
+        help="extract lyrics from urls",
+        arguments=[
+            (['-o', '--output-file'],
+             dict(
+                help='the output file (default ./target/lyrics.txt)',
+                action='store',
+                default='./target/lyrics.txt')
+             ),
+            (['file'],
+             dict(
+                help='a tsv file containing the lyrics urls',
+                action='store',
+                nargs=1)
+             ),
+        ]
+    )
+    def extract(self):
+        extractor = ExtractJob(self.app.pargs.file[0], self.app.pargs.output_file)
+        extractor.run()
+
+
 class LyricsifierApp(CementApp):
     class Meta:
         label = 'lyricsifier'
         arguments_override_config = True
         base_controller = 'base'
-        handlers = [BaseController, CrawlController]
+        handlers = [BaseController, CrawlController, ExtractController]
 
 
 def main():

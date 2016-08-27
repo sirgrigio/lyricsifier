@@ -182,3 +182,4 @@ class MetroLyricsCrawler:
                 self.log.info('no more page for index \'{:s}\''.format(idx))
             else:
                 self.log.warning('cannot open URL {:s} - skipping'.format(url))
+        self.log.info('crawling completed')

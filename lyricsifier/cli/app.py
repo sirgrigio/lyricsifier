@@ -64,6 +64,12 @@ class ExtractController(ArgparseController):
                 action='store',
                 default='./target/lyrics.txt')
              ),
+            (['-t', '--threads'],
+             dict(
+                help='number of threads (default 1)',
+                action='store',
+                default=1)
+             ),
             (['file'],
              dict(
                 help='a tsv file containing the lyrics urls',
@@ -73,8 +79,12 @@ class ExtractController(ArgparseController):
         ]
     )
     def extract(self):
-        extractor = ExtractJob(self.app.pargs.file[0], self.app.pargs.output_file)
-        extractor.run()
+        job = ExtractJob(
+            self.app.pargs.file[0],
+            self.app.pargs.output_file,
+            threads=int(self.app.pargs.threads)
+        )
+        job.start()
 
 
 class LyricsifierApp(CementApp):

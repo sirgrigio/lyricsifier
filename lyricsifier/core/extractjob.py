@@ -60,39 +60,44 @@ class ExtractWorker(threading.Thread):
         return None
 
     def run(self):
-        with open(self.fout, 'w', encoding='utf8') as tsvout:
-            writer = csv.DictWriter(tsvout,
-                                    delimiter='\t',
-                                    fieldnames=self.tsv_headers)
-            writer.writeheader()
-            tot = len(self.tracks)
-            for i, track in enumerate(self.tracks):
-                self.log.info('track {:d}/{:d} - {}'.format(i, tot, track))
-                url = track['url']
-                artist = track['artist']
-                title = track['title']
-                extractor = self._selectExtractor(url)
-                if not extractor:
-                    self.log.warning(
-                        'no extractor suitable for {:s} - skipping'
-                        .format(url))
-                    continue
-                lyrics = self._extract(url, extractor)
-                if lyrics:
-                    lyrics = self._normalize(lyrics.decode('utf8'))
-                    self.log.debug(
-                        'lyrics normalized - {}'.format(lyrics.encode('utf8')))
-                    self.log.info('writing data to output file')
-                    writer.writerow(
-                        {'url': url,
-                         'artist': artist,
-                         'title': title,
-                         'lyrics': lyrics}
-                    )
-                else:
-                    self.log.warning(
-                        'cannot extract from {} - skipping'.format(url))
-            self.log.info('worker {} finished'.format(self.wid))
+        try:
+            with open(self.fout, 'w', encoding='utf8') as tsvout:
+                writer = csv.DictWriter(tsvout,
+                                        delimiter='\t',
+                                        fieldnames=self.tsv_headers)
+                writer.writeheader()
+                tot = len(self.tracks)
+                for i, track in enumerate(self.tracks):
+                    self.log.info('track {:d}/{:d} - {}'.format(i, tot, track))
+                    url = track['url']
+                    artist = track['artist']
+                    title = track['title']
+                    extractor = self._selectExtractor(url)
+                    if not extractor:
+                        self.log.warning(
+                            'no extractor suitable for {:s} - skipping'
+                            .format(url))
+                        continue
+                    lyrics = self._extract(url, extractor)
+                    if lyrics:
+                        lyrics = self._normalize(lyrics.decode('utf8'))
+                        self.log.debug(
+                            'lyrics normalized - {}'
+                            .format(lyrics.encode('utf8')))
+                        self.log.info('writing data to output file')
+                        writer.writerow(
+                            {'url': url,
+                             'artist': artist,
+                             'title': title,
+                             'lyrics': lyrics}
+                        )
+                    else:
+                        self.log.warning(
+                            'cannot extract from {} - skipping'.format(url))
+                self.log.info('worker {} finished'.format(self.wid))
+        except Exception as e:
+            self.log.error(e)
+            raise e
 
 
 class ExtractJob:

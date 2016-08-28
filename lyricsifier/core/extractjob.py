@@ -1,4 +1,5 @@
 import csv
+import errno
 import logging
 import os
 import re
@@ -8,6 +9,7 @@ import urllib.error
 from lyricsifier.core.extractor \
     import MetroLyricsExtractor, LyricsComExtractor, \
     LyricsModeExtractor, AZLyricsExtractor
+from socket import error as SocketError
 from unidecode import unidecode
 
 
@@ -57,6 +59,15 @@ class ExtractWorker(threading.Thread):
                 self.log.error(e)
                 delay *= 2
                 self.__sleep(delay)
+            except SocketError as e:
+                self.log.error(e)
+                if e.errno == errno.ECONNRESET or \
+                   e.errno == errno.ETIMEDOUT or \
+                   e.errno == errno.ECONNABORTED:
+                    delay *= 2
+                    self.__sleep(delay)
+                else:
+                    return None
         return None
 
     def run(self):

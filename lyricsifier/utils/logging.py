@@ -3,7 +3,7 @@ import json
 import logging.config
 
 
-def loadCfg(default_path='logging.json',
+def loadcfg(default_path='logging.json',
             default_level=logging.INFO,
             env_key='LOG_CFG'):
     env = os.getenv(env_key, None)

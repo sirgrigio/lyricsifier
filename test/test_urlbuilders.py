@@ -8,7 +8,7 @@ from lyricsifier.core.urlbuilder \
 class TestURLBuilders(unittest.TestCase):
 
     def setUp(self):
-        logging.loadCfg(default_path='logging_test.json')
+        logging.loadcfg(default_path='logging_test.json')
 
     def testMetroLyrics(self):
         print()

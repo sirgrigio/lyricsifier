@@ -5,7 +5,7 @@ from lyricsifier.utils import logging, lastfm
 class TestLastFM(unittest.TestCase):
 
     def setUp(self):
-        logging.loadCfg(default_path='logging_test.json')
+        logging.loadcfg(default_path='logging_test.json')
         self.api_key = 'ac5188f22006a4ef88c6b83746b11118'
 
     def test_ok(self):

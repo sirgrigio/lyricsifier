@@ -97,7 +97,7 @@ class LyricsifierApp(CementApp):
 
 def main():
     with LyricsifierApp() as app:
-        logging.loadCfg()
+        logging.loadcfg()
         app.setup()
         app.run()
 

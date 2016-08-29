@@ -7,20 +7,36 @@ import urllib.request
 import urllib.error
 from bs4 import BeautifulSoup
 from string import ascii_lowercase
-from lyricsifier.utils import file
+from lyricsifier.utils import connection, file, normalization
+from lyricsifier.utils.connection import SOFTConnError, FATALConnError
 
 
 class MetroLyricsCrawler:
 
-    def __writeTSVHeader(self):
+    def __init__(self, fout, max_delay, max_depth=100):
+        self.base_url = 'http://www.metrolyrics.com'
+        self.artists_index = ['1'] + list(ascii_lowercase)
+        self.artists_page_pattern = self.base_url + '/artists-{:s}-{:d}.html'
+        self.fout = fout
+        self.max_delay = max_delay
+        self.max_depth = max_depth
+        self.currid = 0
+        self.tsv_headers = ['trackid', 'url', 'artist', 'title']
+        self.log = logging.getLogger(__name__)
+
+    def _setUp(self):
+        self.log.info('setting up')
+        file.mkdirs(os.path.dirname(self.fout), safe=True)
         with open(self.fout, 'w', encoding='utf8') as tsvout:
-            self.log.info('creating output tsv file')
             writer = csv.DictWriter(tsvout,
                                     delimiter='\t',
                                     fieldnames=self.tsv_headers)
             writer.writeheader()
+        self.log.debug('max delay: {:d}'.format(self.max_delay))
+        self.log.debug('max depth: {:d}'.format(self.max_depth))
+        self.log.debug('output file: {:s}'.format(self.fout))
 
-    def __bulkWriteTSVRows(self, rows):
+    def _batchWrite(self, rows):
         with open(self.fout, 'a', encoding='utf8') as tsvout:
             self.log.info('writing rows to file {:s}'.format(self.fout))
             writer = csv.DictWriter(tsvout,
@@ -28,66 +44,42 @@ class MetroLyricsCrawler:
                                     fieldnames=self.tsv_headers)
             writer.writerows(rows)
 
-    def __rreplace(self, s, old, new, occurrence=1):
-        li = s.rsplit(old, occurrence)
-        return new.join(li)
+    def _request(self, url):
+        self.log.info('requesting URL {:s}'.format(url))
+        return urllib.request.Request(url)
 
-    def __sleep(self, secs):
+    def _sleep(self, secs):
         self.log.warning(
             'going to sleep for {:d} seconds'.format(secs))
         time.sleep(secs)
 
-    def __open(self, request):
+    def _open(self, request):
         delay = 1
         while delay < self.max_delay:
             try:
-                return urllib.request.urlopen(request)
-            except urllib.error.HTTPError as e:
-                self.log.error(e)
-                if 400 <= e.code < 500:
-                    return None
-                delay *= 2
-                self.__sleep(delay)
-            except urllib.error.URLError as e:
+                return connection.open(request)
+            except SOFTConnError as e:
                 self.log.error(e)
                 delay *= 2
-                self.__sleep(delay)
-            except Exception as e:
+                self._sleep(delay)
+            except FATALConnError as e:
                 self.log.error(e)
                 return None
         return None
 
-    def __init__(self, fout, max_delay, max_depth=100):
-        self.base_url = 'http://www.metrolyrics.com'
-        self.artists_index = ['1'] + list(ascii_lowercase)
-        self.artists_page_pattern = self.base_url + '/artists-{:s}-{:d}.html'
-        self.fout = os.path.abspath(fout)
-        self.max_delay = max_delay
-        self.max_depth = max_depth
-        self.currid = 0
-        self.tsv_headers = ['trackid', 'url', 'artist', 'title']
-        self.log = logging.getLogger(__name__)
-        file.mkdirs(os.path.dirname(self.fout), safe=True)
-        self.__writeTSVHeader()
-        self.log.info(
-            'crawler initialized with output file {:s} and max delay {:d}'
-            .format(self.fout, self.max_delay))
-
     def _requestArtistsPage(self, idx, page):
         url = self.artists_page_pattern.format(str(idx), page)
-        self.log.info('requesting URL {:s}'.format(url))
-        request = urllib.request.Request(url)
-        return url, self.__open(request)
+        request = self._request(url)
+        return url, self._open(request)
 
     def _requestSongsPage(self, pattern, page):
         url = pattern.format(page)
-        self.log.info('requesting URL {:s}'.format(url))
-        request = urllib.request.Request(url)
-        return url, self.__open(request)
+        request = self._request(url)
+        return url, self._open(request)
 
     def _extractArtistName(self, a_elem):
         text = a_elem.get_text().encode('utf8')
-        name = self.__rreplace(text, b' Lyrics', b'').strip(b'\n\r\s\t')
+        name = normalization.rreplace(text, b' Lyrics', b'').strip(b'\n\r\s\t')
         self.log.debug(
             'artist name {} extracted from {:s}'.format(
                 name.decode('utf8'), a_elem.prettify()))
@@ -103,7 +95,8 @@ class MetroLyricsCrawler:
 
     def _extractSongTitle(self, a_elem):
         text = a_elem.get_text().encode('utf8')
-        title = self.__rreplace(text, b' Lyrics', b'').strip(b'\n\r\s\t')
+        title = normalization.rreplace(
+            text, b' Lyrics', b'').strip(b'\n\r\s\t')
         self.log.debug(
             'song title {} extracted from {:s}'.format(
                 title.decode('utf8'), a_elem.prettify()))
@@ -124,9 +117,9 @@ class MetroLyricsCrawler:
             )
             self.currid += 1
             self.log.info('new lyrics URL crawled - {:s}'.format(lyrics_url))
-        self.__bulkWriteTSVRows(output_rows)
+        self._batchWrite(output_rows)
 
-    def _parseArtistTable(self, table):
+    def _parseArtistsTable(self, table):
         self.log.info('parsing artists table')
         for row in table.tbody.findAll('tr'):
             artist_a = row.find('td').find_next('a', href=True)
@@ -155,7 +148,7 @@ class MetroLyricsCrawler:
             else:
                 self.log.warning('cannot open URL {:s} - skipping'.format(url))
 
-    def crawl(self):
+    def _browse(self):
         for idx in self.artists_index:
             self.log.info('crawling index \'{:s}\''.format(idx))
             page = 1
@@ -165,7 +158,7 @@ class MetroLyricsCrawler:
                 soup = BeautifulSoup(html, 'html.parser')
                 table = soup.find('table', class_='songs-table')
                 if table:
-                    self._parseArtistTable(table)
+                    self._parseArtistsTable(table)
                 else:
                     self.log.warning(
                         'cannot crawl from {:s} - skipping'.format(url))
@@ -178,4 +171,8 @@ class MetroLyricsCrawler:
                 self.log.info('no more page for index \'{:s}\''.format(idx))
             else:
                 self.log.warning('cannot open URL {:s} - skipping'.format(url))
+
+    def crawl(self):
+        self._setUp()
+        self._browse()
         self.log.info('crawling completed')

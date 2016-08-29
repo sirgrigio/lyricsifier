@@ -4,15 +4,11 @@ import urllib.request
 import urllib.error
 from abc import ABC, abstractmethod
 from bs4 import BeautifulSoup
+from lyricsifier.utils import connection
 
 
 class URLError(Exception):
-
-    def __init__(self, value):
-        self.value = value
-
-    def __str__(self):
-        return repr(self.value)
+    pass
 
 
 class BaseExtractor(ABC):
@@ -36,7 +32,7 @@ class BaseExtractor(ABC):
             raise URLError('{} cannot extract from URL {:s}'.format(self, url))
         self.log.info('loading page at URL {:s}'.format(url))
         request = urllib.request.Request(url)
-        response = urllib.request.urlopen(request)
+        response = connection.open(request)
         if url != response.geturl():
             self.log.warning('redirected to {:s}'.format(response.geturl()))
         html = response.read()

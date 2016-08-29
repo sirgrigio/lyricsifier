@@ -9,6 +9,7 @@ import urllib.error
 from lyricsifier.core.extractor \
     import MetroLyricsExtractor, LyricsComExtractor, \
     LyricsModeExtractor, AZLyricsExtractor
+from lyricsifier.utils import file
 from socket import error as SocketError
 from unidecode import unidecode
 
@@ -116,13 +117,6 @@ class ExtractJob:
     __extractors__ = [MetroLyricsExtractor(), LyricsComExtractor(),
                       LyricsModeExtractor(), AZLyricsExtractor(), ]
 
-    def __createWorkersDirIfNotExists(self):
-        if not os.path.exists(self.workersdir):
-            self.log.warning(
-                'workers directory {:s} does not exist - creating it'.format(
-                    self.workersdir))
-            os.makedirs(self.workersdir)
-
     def __init__(self, fin, fout, threads=1, extractors=__extractors__):
         self.fin = fin
         self.fout = fout
@@ -135,7 +129,7 @@ class ExtractJob:
             'extract job initialized - fin {:s} - fout {:s} - workers {:d}'
             .format(self.fin, self.fout, self.threads))
         self.log.info('')
-        self.__createWorkersDirIfNotExists()
+        file.mkdirs(self.workersdir)
 
     def _splitInput(self):
         self.log.info('splitting input for workers')

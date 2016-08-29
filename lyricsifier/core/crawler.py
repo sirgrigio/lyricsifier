@@ -7,17 +7,10 @@ import urllib.request
 import urllib.error
 from bs4 import BeautifulSoup
 from string import ascii_lowercase
+from lyricsifier.utils import file
 
 
 class MetroLyricsCrawler:
-
-    def __createOutDirIfNotExists(self):
-        directory = os.path.dirname(self.fout)
-        if not os.path.exists(directory):
-            self.log.warning(
-                'output directory {:s} does not exist - creating it'.format(
-                    directory))
-            os.makedirs(directory)
 
     def __writeTSVHeader(self):
         with open(self.fout, 'w', encoding='utf8') as tsvout:
@@ -73,7 +66,7 @@ class MetroLyricsCrawler:
         self.max_depth = max_depth
         self.tsv_headers = ['url', 'artist', 'title']
         self.log = logging.getLogger(__name__)
-        self.__createOutDirIfNotExists()
+        file.mkdirs(os.path.dirname(self.fout), safe=True)
         self.__writeTSVHeader()
         self.log.info(
             'crawler initialized with output file {:s} and max delay {:d}'

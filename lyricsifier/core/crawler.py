@@ -64,7 +64,8 @@ class MetroLyricsCrawler:
         self.fout = os.path.abspath(fout)
         self.max_delay = max_delay
         self.max_depth = max_depth
-        self.tsv_headers = ['url', 'artist', 'title']
+        self.currid = 0
+        self.tsv_headers = ['trackid', 'url', 'artist', 'title']
         self.log = logging.getLogger(__name__)
         file.mkdirs(os.path.dirname(self.fout), safe=True)
         self.__writeTSVHeader()
@@ -116,10 +117,12 @@ class MetroLyricsCrawler:
             title = self._extractSongTitle(song_a)
             lyrics_url = song_a['href']
             output_rows.append(
-                {'url': lyrics_url,
+                {'trackid': self.currid + 1,
+                 'url': lyrics_url,
                  'artist': artist.decode('utf8'),
                  'title': title.decode('utf8')}
             )
+            self.currid += 1
             self.log.info('new lyrics URL crawled - {:s}'.format(lyrics_url))
         self.__bulkWriteTSVRows(output_rows)
 

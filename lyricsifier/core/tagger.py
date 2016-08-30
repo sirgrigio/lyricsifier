@@ -49,4 +49,5 @@ class LastFMTagger(BaseTagger):
         if error:
             self.log.error(json_data['message'])
             return None
-        return json_data['toptags']['tag'][0]['name']
+        toptags = json_data['toptags']['tag']
+        return toptags[0]['name'] if toptags else None

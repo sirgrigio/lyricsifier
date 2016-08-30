@@ -92,7 +92,7 @@ class ExtractController(ArgparseController):
 
 class TagController(ArgparseController):
     class Meta:
-        label = 'extract'
+        label = 'tag'
         stacked_on = 'base'
 
     @expose(hide=True)

@@ -107,24 +107,20 @@ class TagWorker(BaseWorker):
         self.max_delay = max_delay
         self.tsv_headers = ['trackid', 'artist', 'title', 'tag']
 
-    def _tag(self, artist, title):
+    def _tag(self, artist, title, tagger):
         self.log.info('getting tag for "{}"-"{}"'.format(artist, title))
-        for tagger in self.taggers:
-            self.log.info
-            delay = 1
-            while delay < self.max_delay:
-                try:
-                    tag = tagger.tag(artist, title)
-                    if tag:
-                        return tag
-                except SOFTConnError as e:
-                    self.log.error(e)
-                    delay *= 2
-                    self._sleep(delay)
-                except FATALConnError as e:
-                    self.log.error(e)
-                    break
-        return None
+        self.log.info('using tagger {}'.format(tagger))
+        delay = 1
+        while delay < self.max_delay:
+            try:
+                return tagger.tag(artist, title)
+            except SOFTConnError as e:
+                self.log.error(e)
+                delay *= 2
+                self._sleep(delay)
+            except FATALConnError as e:
+                self.log.error(e)
+                return None
 
     def work(self):
         with open(self.fout, 'w', encoding='utf8') as tsvout:
@@ -139,7 +135,11 @@ class TagWorker(BaseWorker):
                 trackid = track['trackid']
                 artist = track['artist']
                 title = track['title']
-                tag = self._tag(artist, title)
+                tag = None
+                for tagger in self.taggers:
+                    tag = self._tag(artist, title, tagger)
+                    if tag:
+                        break
                 if tag:
                     self.log.info(
                         'track "{}"-"{}" tagged as {}'

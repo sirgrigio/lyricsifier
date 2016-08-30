@@ -85,7 +85,7 @@ class ExtractJob:
 
 class TagJob:
 
-    __taggers__ = [LastFMTagger(), ]
+    __taggers__ = [LastFMTagger(api_key='ac5188f22006a4ef88c6b83746b11118'), ]
 
     def __init__(self, fin, fout, threads=1, taggers=__taggers__):
         self.fin = fin
@@ -137,7 +137,7 @@ class TagJob:
                     for row in reader:
                         writer.writerow(
                             {'trackid': row['trackid'],
-                             'artits': row['artist'],
+                             'artist': row['artist'],
                              'title': row['title'],
                              'tag': row['tag']}
                         )
@@ -154,4 +154,4 @@ class TagJob:
             for worker in workers:
                 worker.join()
             self._merge(workers)
-        self.log.info('extract job completed')
+        self.log.info('tag job completed')

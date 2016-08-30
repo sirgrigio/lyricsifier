@@ -7,7 +7,7 @@ log = logging.getLogger(__name__)
 def load(file, splits=1):
     content = []
     with open(file, 'r', encoding='utf8') as tsvin:
-        reader = csv.DictReader(tsvin, delimiter='\t')
+        reader = csv.DictReader(tsvin, delimiter='\t', quoting=csv.QUOTE_NONE)
         for row in reader:
             dictionary = {}
             for k in row:

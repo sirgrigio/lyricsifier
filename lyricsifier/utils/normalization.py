@@ -13,4 +13,4 @@ def rreplace(s, old, new, occurrence=1):
 def inline(string, lower=False):
     s = re.sub('[\n\r\t]', ' ', string)
     s = re.sub(' +', ' ', s)
-    return s.strip()
+    return s.strip().lower() if lower else s.strip()

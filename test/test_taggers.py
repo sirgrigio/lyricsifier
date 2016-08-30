@@ -26,11 +26,23 @@ class TestLastFM(unittest.TestCase):
              'title': 'Because The Night',
              'tag': 'covers'},
         ]
+        artists = [
+            {'artist': 'Alicia Keys',
+             'tag': 'soul'},
+            {'artist': 'Cher',
+             'tag': 'pop'},
+        ]
         for track in tracks:
             for tagger in self.taggers:
                 self.assertEqual(
                     track['tag'],
-                    tagger.tag(track['artist'], track['title'])
+                    tagger.tagTrack(track['artist'], track['title'])
+                )
+        for artist in artists:
+            for tagger in self.taggers:
+                self.assertEqual(
+                    artist['tag'],
+                    tagger.tagArtist(artist['artist'])
                 )
 
     def test_fail(self):
@@ -38,4 +50,5 @@ class TestLastFM(unittest.TestCase):
         artist = 'NoArtistWithThisName'
         track = 'NoSongWithThisTitle'
         for tagger in self.taggers:
-            self.assertIsNone(tagger.tag(artist, track))
+            self.assertIsNone(tagger.tagTrack(artist, track))
+            self.assertIsNone(tagger.tagArtist(artist))

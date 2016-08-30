@@ -106,6 +106,7 @@ class TagWorker(BaseWorker):
         self.taggers = taggers
         self.max_delay = max_delay
         self.tsv_headers = ['trackid', 'artist', 'title', 'tag']
+        self.cached = {}
 
     def _tag(self, artist, title, tagger):
         self.log.info('getting tag for "{}"-"{}"'.format(artist, title))
@@ -113,7 +114,12 @@ class TagWorker(BaseWorker):
         delay = 1
         while delay < self.max_delay:
             try:
-                return tagger.tag(artist, title)
+                if artist in self.cached:
+                    return self.cached[artist]
+                else:
+                    tag = tagger.tagArtist(artist)
+                    self.cached[artist] = tag
+                    return tag
             except SOFTConnError as e:
                 self.log.error(e)
                 delay *= 2

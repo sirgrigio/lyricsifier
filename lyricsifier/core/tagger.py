@@ -15,7 +15,11 @@ class BaseTagger(ABC):
         return self.__class__.__name__
 
     @abstractmethod
-    def tag(self, artist, title):
+    def tagArtist(self, artist):
+        pass
+
+    @abstractmethod
+    def tagTrack(self, artist, title):
         pass
 
 
@@ -25,24 +29,17 @@ class LastFMTagger(BaseTagger):
         BaseTagger.__init__(self)
         self.api_key = api_key
         self.base_url = "http://ws.audioscrobbler.com/2.0/"
-        self.params = {
-            'method': 'track.gettoptags',
-            'artist': None,
-            'track': None,
-            'api_key': api_key,
-            'format': 'json'
-        }
 
-    def tag(self, artist, title):
-        self.params['artist'] = artist
-        self.params['track'] = title
+    def _request(self, params):
         self.log.info(
-            'executing request to last.fm with params {}'.format(self.params))
-        data = urllib.parse.urlencode(self.params)
+            'executing request to last.fm with params {}'.format(params))
+        data = urllib.parse.urlencode(params)
         full_url = self.base_url + '?' + data
         self.log.info('requesting URL {}'.format(full_url))
         request = urllib.request.Request(full_url)
-        response = connection.open(request)
+        return connection.open(request)
+
+    def _parse(self, response):
         json_data = json.loads(response.read().decode('utf8'))
         self.log.debug('response {}'.format(json_data))
         error = json_data.get('error', None)
@@ -51,3 +48,24 @@ class LastFMTagger(BaseTagger):
             return None
         toptags = json_data['toptags']['tag']
         return toptags[0]['name'] if toptags else None
+
+    def tagArtist(self, artist):
+        params = {
+            'method': 'artist.gettoptags',
+            'artist': artist,
+            'api_key': self.api_key,
+            'format': 'json'
+        }
+        response = self._request(params)
+        return self._parse(response)
+
+    def tagTrack(self, artist, title):
+        params = {
+            'method': 'track.gettoptags',
+            'artist': artist,
+            'track': title,
+            'api_key': self.api_key,
+            'format': 'json'
+        }
+        response = self._request(params)
+        return self._parse(response)

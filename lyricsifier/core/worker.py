@@ -3,6 +3,7 @@ import logging
 import re
 import time
 import threading
+from lyricsifier.utils import normalization as nutils
 from lyricsifier.utils.connection import SOFTConnError, FATALConnError
 from unidecode import unidecode
 
@@ -86,10 +87,10 @@ class ExtractWorker(BaseWorker):
                     continue
                 lyrics = self._extract(url, extractor)
                 if lyrics:
-                    lyrics = self._normalize(lyrics.decode('utf8'))
+                    lyrics = self._normalize(nutils.decode(lyrics))
                     self.log.debug(
                         'lyrics normalized - {}'
-                        .format(lyrics.encode('utf8')))
+                        .format(lyrics))
                     self.log.info('writing data to output file')
                     writer.writerow(
                         {'trackid': trackid,

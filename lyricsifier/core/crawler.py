@@ -7,7 +7,7 @@ import urllib.request
 import urllib.error
 from bs4 import BeautifulSoup
 from string import ascii_lowercase
-from lyricsifier.utils import connection, file, normalization
+from lyricsifier.utils import connection, file, normalization as nutils
 from lyricsifier.utils.connection import SOFTConnError, FATALConnError
 
 
@@ -78,11 +78,11 @@ class MetroLyricsCrawler:
         return url, self._open(request)
 
     def _extractArtistName(self, a_elem):
-        text = a_elem.get_text().encode('utf8')
-        name = normalization.rreplace(text, b' Lyrics', b'').strip(b'\n\r\s\t')
+        text = nutils.encode(a_elem.get_text())
+        name = nutils.rreplace(text, b' Lyrics', b'').strip(b'\n\r\s\t')
         self.log.debug(
             'artist name {} extracted from {:s}'.format(
-                name.decode('utf8'), a_elem.prettify()))
+                nutils.decode(name), a_elem.prettify()))
         return name
 
     def _extractArtistSongsPagePattern(self, a_elem):
@@ -94,12 +94,12 @@ class MetroLyricsCrawler:
         return pattern
 
     def _extractSongTitle(self, a_elem):
-        text = a_elem.get_text().encode('utf8')
-        title = normalization.rreplace(
+        text = nutils.encode(a_elem.get_text())
+        title = nutils.rreplace(
             text, b' Lyrics', b'').strip(b'\n\r\s\t')
         self.log.debug(
             'song title {} extracted from {:s}'.format(
-                title.decode('utf8'), a_elem.prettify()))
+                nutils.decode(title), a_elem.prettify()))
         return title
 
     def _parseSongsTable(self, artist, table):
@@ -112,8 +112,8 @@ class MetroLyricsCrawler:
             output_rows.append(
                 {'trackid': self.currid + 1,
                  'url': lyrics_url,
-                 'artist': artist.decode('utf8'),
-                 'title': title.decode('utf8')}
+                 'artist': nutils.decode(artist),
+                 'title': nutils.decode(title)}
             )
             self.currid += 1
             self.log.info('new lyrics URL crawled - {:s}'.format(lyrics_url))
@@ -144,7 +144,7 @@ class MetroLyricsCrawler:
             if response:
                 self.log.info(
                     'no more songs for artist {:s}'.format(
-                        artist.decode('utf8')))
+                        nutils.decode(artist)))
             else:
                 self.log.warning('cannot open URL {:s} - skipping'.format(url))
 

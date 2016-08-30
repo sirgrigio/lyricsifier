@@ -4,7 +4,7 @@ import urllib.request
 import urllib.error
 from abc import ABC, abstractmethod
 from bs4 import BeautifulSoup
-from lyricsifier.utils import connection
+from lyricsifier.utils import connection, normalization as nutils
 
 
 class URLError(Exception):
@@ -55,7 +55,7 @@ class MetroLyricsExtractor(BaseExtractor):
             self.log.warning('unable to extract')
             return None
         lyrics = b' '.join(
-            [p.get_text().encode('utf8')
+            [nutils.encode(p.get_text())
              if p.get('id') != 'mid-song-discussion' else b''
              for p in div.findChildren('p')])
         self.log.info('lyrics extracted')
@@ -78,7 +78,7 @@ class LyricsComExtractor(BaseExtractor):
         if not div:
             self.log.warning('unable to extract')
             return None
-        lyrics = div.get_text().encode('utf8')
+        lyrics = nutils.encode(div.get_text())
         self.log.info('lyrics extracted')
         self.log.debug('{}'.format(lyrics))
         return lyrics
@@ -99,7 +99,7 @@ class LyricsModeExtractor(BaseExtractor):
         if not p:
             self.log.warning('unable to extract')
             return None
-        lyrics = p.get_text().encode('utf8')
+        lyrics = nutils.encode(p.get_text())
         self.log.info('lyrics extracted')
         self.log.debug('{}'.format(lyrics))
         return lyrics
@@ -120,7 +120,7 @@ class AZLyricsExtractor(BaseExtractor):
         if not div:
             self.log.warning('unable to extract')
             return None
-        lyrics = div.get_text().encode('utf8')
+        lyrics = nutils.encode(div.get_text())
         self.log.info('lyrics extracted')
         self.log.debug('{}'.format(lyrics))
         return lyrics

@@ -12,6 +12,7 @@ class BaseWorker(threading.Thread):
     def __init__(self, wid):
         threading.Thread.__init__(self, name=wid)
         self.wid = wid
+        self.log = logging.getLogger(__name__)
 
     def _sleep(self, secs):
         self.log.warning(
@@ -38,7 +39,6 @@ class ExtractWorker(BaseWorker):
         self.extractors = extractors
         self.max_delay = max_delay
         self.tsv_headers = ['trackid', 'lyrics']
-        self.log = logging.getLogger(__name__)
 
     def _selectExtractor(self, url):
         for extractor in self.extractors:
@@ -94,4 +94,65 @@ class ExtractWorker(BaseWorker):
                 else:
                     self.log.warning(
                         'cannot extract from {} - skipping'.format(url))
+            self.log.info('worker {} finished'.format(self.wid))
+
+
+class TagWorker(BaseWorker):
+
+    def __init__(self, wid, tracks, fout, taggers, max_delay=500):
+        BaseWorker.__init__(self, wid)
+        self.tracks = tracks
+        self.fout = fout
+        self.taggers = taggers
+        self.max_delay = max_delay
+        self.tsv_headers = ['trackid', 'artist', 'title', 'tag']
+
+    def _tag(self, artist, title):
+        self.log.info('getting tag for "{}"-"{}"'.format(artist, title))
+        for tagger in self.taggers:
+            self.log.info
+            delay = 1
+            while delay < self.max_delay:
+                try:
+                    tag = tagger.tag(artist, title)
+                    if tag:
+                        return tag
+                except SOFTConnError as e:
+                    self.log.error(e)
+                    delay *= 2
+                    self._sleep(delay)
+                except FATALConnError as e:
+                    self.log.error(e)
+                    break
+        return None
+
+    def work(self):
+        with open(self.fout, 'w', encoding='utf8') as tsvout:
+            writer = csv.DictWriter(tsvout,
+                                    delimiter='\t',
+                                    fieldnames=self.tsv_headers)
+            writer.writeheader()
+            tot = len(self.tracks)
+            for i, track in enumerate(self.tracks):
+                self.log.info(
+                    'track {:d}/{:d} - {}'.format((i + 1), tot, track))
+                trackid = track['trackid']
+                artist = track['artist']
+                title = track['title']
+                tag = self._tag(artist, title)
+                if tag:
+                    self.log.info(
+                        'track "{}"-"{}" tagged as {}'
+                        .format(artist, title, tag))
+                    self.log.info('writing data to output file')
+                    writer.writerow(
+                        {'trackid': trackid,
+                         'artist': artist,
+                         'title': title,
+                         'tag': tag}
+                    )
+                else:
+                    self.log.warning(
+                        'cannot tag "{}"-"{}" - skipping'
+                        .format(artist, title))
             self.log.info('worker {} finished'.format(self.wid))

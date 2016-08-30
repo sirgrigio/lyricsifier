@@ -1,12 +1,14 @@
 import unittest
-from lyricsifier.utils import logging, lastfm
+from lyricsifier.core.tagger import LastFMTagger
+from lyricsifier.utils import logging
 
 
 class TestLastFM(unittest.TestCase):
 
     def setUp(self):
         logging.loadcfg(default_path='logging_test.json')
-        self.api_key = 'ac5188f22006a4ef88c6b83746b11118'
+        lastfm_api_key = 'ac5188f22006a4ef88c6b83746b11118'
+        self.taggers = [LastFMTagger(lastfm_api_key), ]
 
     def test_ok(self):
         print()
@@ -25,13 +27,15 @@ class TestLastFM(unittest.TestCase):
              'tag': 'covers'},
         ]
         for track in tracks:
-            self.assertEqual(
-                track['tag'],
-                lastfm.get_tag(self.api_key, track['artist'], track['title'])
-            )
+            for tagger in self.taggers:
+                self.assertEqual(
+                    track['tag'],
+                    tagger.tag(track['artist'], track['title'])
+                )
 
     def test_fail(self):
         print()
         artist = 'NoArtistWithThisName'
         track = 'NoSongWithThisTitle'
-        self.assertIsNone(lastfm.get_tag(self.api_key, artist, track))
+        for tagger in self.taggers:
+            self.assertIsNone(tagger.tag(artist, track))

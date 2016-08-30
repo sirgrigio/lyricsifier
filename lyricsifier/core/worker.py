@@ -1,16 +1,16 @@
 import csv
 import logging
+import multiprocessing
 import time
-import threading
 from lyricsifier.utils import normalization as nutils
 from lyricsifier.utils.connection import SOFTConnError, FATALConnError
 from unidecode import unidecode
 
 
-class BaseWorker(threading.Thread):
+class BaseWorker(multiprocessing.Process):
 
     def __init__(self, wid):
-        threading.Thread.__init__(self, name=wid)
+        multiprocessing.Process.__init__(self, name=wid)
         self.wid = wid
         self.log = logging.getLogger(__name__)
 

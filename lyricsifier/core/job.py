@@ -15,10 +15,10 @@ class ExtractJob:
     __extractors__ = [MetroLyricsExtractor(), LyricsComExtractor(),
                       LyricsModeExtractor(), AZLyricsExtractor(), ]
 
-    def __init__(self, fin, fout, threads=1, extractors=__extractors__):
+    def __init__(self, fin, fout, processes=1, extractors=__extractors__):
         self.fin = fin
         self.fout = fout
-        self.threads = threads
+        self.processes = processes
         self.extractors = extractors
         self.tsv_headers = ['trackid', 'lyrics']
         self.log = logging.getLogger(__name__)
@@ -31,14 +31,14 @@ class ExtractJob:
                                     delimiter='\t',
                                     fieldnames=self.tsv_headers)
             writer.writeheader()
-        self.log.debug('threads: {:d}'.format(self.threads))
+        self.log.debug('processes: {:d}'.format(self.processes))
         self.log.debug('extractors: {}'.format(self.extractors))
         self.log.debug('output file: {:s}'.format(self.fout))
 
     def _createWorkers(self, tmpdir, splits):
         self.log.info('creating workers')
         workers = []
-        for i in range(self.threads):
+        for i in range(self.processes):
             wid = 'w{:d}'.format(i)
             fout = os.path.join(tmpdir, wid)
             tracks = splits[i]
@@ -70,7 +70,7 @@ class ExtractJob:
 
     def start(self):
         self._setUp()
-        splits = csvutils.load(self.fin, splits=self.threads)
+        splits = csvutils.load(self.fin, splits=self.processes)
         with tempfile.TemporaryDirectory() as tmpdir:
             workers = self._createWorkers(tmpdir, splits)
             self.log.info('starting workers')
@@ -87,10 +87,10 @@ class TagJob:
 
     __taggers__ = [LastFMTagger(api_key='ac5188f22006a4ef88c6b83746b11118'), ]
 
-    def __init__(self, fin, fout, threads=1, taggers=__taggers__):
+    def __init__(self, fin, fout, processes=1, taggers=__taggers__):
         self.fin = fin
         self.fout = fout
-        self.threads = threads
+        self.processes = processes
         self.taggers = taggers
         self.tsv_headers = ['trackid', 'artist', 'title', 'tag']
         self.log = logging.getLogger(__name__)
@@ -103,14 +103,14 @@ class TagJob:
                                     delimiter='\t',
                                     fieldnames=self.tsv_headers)
             writer.writeheader()
-        self.log.debug('threads: {:d}'.format(self.threads))
+        self.log.debug('processes: {:d}'.format(self.processes))
         self.log.debug('taggers: {}'.format(self.taggers))
         self.log.debug('output file: {:s}'.format(self.fout))
 
     def _createWorkers(self, tmpdir, splits):
         self.log.info('creating workers')
         workers = []
-        for i in range(self.threads):
+        for i in range(self.processes):
             wid = 'w{:d}'.format(i)
             fout = os.path.join(tmpdir, wid)
             tracks = splits[i]
@@ -144,7 +144,7 @@ class TagJob:
 
     def start(self):
         self._setUp()
-        splits = csvutils.load(self.fin, splits=self.threads)
+        splits = csvutils.load(self.fin, splits=self.processes)
         with tempfile.TemporaryDirectory() as tmpdir:
             workers = self._createWorkers(tmpdir, splits)
             self.log.info('starting workers')

@@ -67,9 +67,9 @@ class ExtractController(ArgparseController):
                 action='store',
                 default='./target/lyrics.txt')
              ),
-            (['-t', '--threads'],
+            (['-p', '--processes'],
              dict(
-                help='number of threads (default 1)',
+                help='number of parallel processes (default 1)',
                 action='store',
                 default=1)
              ),
@@ -85,7 +85,7 @@ class ExtractController(ArgparseController):
         job = ExtractJob(
             self.app.pargs.file[0],
             self.app.pargs.output_file,
-            threads=int(self.app.pargs.threads)
+            processes=int(self.app.pargs.processes)
         )
         job.start()
 
@@ -108,9 +108,9 @@ class TagController(ArgparseController):
                 action='store',
                 default='./target/tags.txt')
              ),
-            (['-t', '--threads'],
+            (['-p', '--processes'],
              dict(
-                help='number of threads (default 1)',
+                help='number of parallel processes (default 1)',
                 action='store',
                 default=1)
              ),
@@ -126,7 +126,7 @@ class TagController(ArgparseController):
         job = TagJob(
             self.app.pargs.file[0],
             self.app.pargs.output_file,
-            threads=int(self.app.pargs.threads)
+            processes=int(self.app.pargs.processes)
         )
         job.start()
 

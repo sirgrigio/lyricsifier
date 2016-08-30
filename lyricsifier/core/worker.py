@@ -76,7 +76,8 @@ class ExtractWorker(BaseWorker):
             writer.writeheader()
             tot = len(self.tracks)
             for i, track in enumerate(self.tracks):
-                self.log.info('track {:d}/{:d} - {}'.format(i, tot, track))
+                self.log.info(
+                    'track {:d}/{:d} - {}'.format((i + 1), tot, track))
                 trackid = track['trackid']
                 url = track['url']
                 extractor = self._selectExtractor(url)

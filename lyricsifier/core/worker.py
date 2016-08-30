@@ -1,6 +1,5 @@
 import csv
 import logging
-import re
 import time
 import threading
 from lyricsifier.utils import normalization as nutils
@@ -40,12 +39,6 @@ class ExtractWorker(BaseWorker):
         self.max_delay = max_delay
         self.tsv_headers = ['trackid', 'lyrics']
         self.log = logging.getLogger(__name__)
-
-    def _normalize(self, string):
-        s = unidecode(string)
-        s = re.sub('[\n\r\t]', ' ', s)
-        s = re.sub(' +', ' ', s)
-        return s.strip().lower()
 
     def _selectExtractor(self, url):
         for extractor in self.extractors:
@@ -88,7 +81,8 @@ class ExtractWorker(BaseWorker):
                     continue
                 lyrics = self._extract(url, extractor)
                 if lyrics:
-                    lyrics = self._normalize(nutils.decode(lyrics))
+                    lyrics = nutils.inline(
+                        unidecode(nutils.decode(lyrics)), lower=True)
                     self.log.debug(
                         'lyrics normalized - {}'
                         .format(lyrics))

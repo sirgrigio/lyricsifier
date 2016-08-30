@@ -1,7 +1,7 @@
 from cement.core.foundation import CementApp
 from cement.ext.ext_argparse import ArgparseController, expose
 from lyricsifier.core.crawler import MetroLyricsCrawler
-from lyricsifier.core.job import ExtractJob
+from lyricsifier.core.job import ExtractJob, TagJob
 from lyricsifier.utils import logging
 
 
@@ -87,12 +87,54 @@ class ExtractController(ArgparseController):
         job.start()
 
 
+class TagController(ArgparseController):
+    class Meta:
+        label = 'extract'
+        stacked_on = 'base'
+
+    @expose(hide=True)
+    def default(self):
+        pass
+
+    @expose(
+        help="tag the given tracks",
+        arguments=[
+            (['-o', '--output-file'],
+             dict(
+                help='the output file (default ./target/tags.txt)',
+                action='store',
+                default='./target/tags.txt')
+             ),
+            (['-t', '--threads'],
+             dict(
+                help='number of threads (default 1)',
+                action='store',
+                default=1)
+             ),
+            (['file'],
+             dict(
+                help='a tsv file containing tracks id, artist and title',
+                action='store',
+                nargs=1)
+             ),
+        ]
+    )
+    def tag(self):
+        job = TagJob(
+            self.app.pargs.file[0],
+            self.app.pargs.output_file,
+            threads=int(self.app.pargs.threads)
+        )
+        job.start()
+
+
 class LyricsifierApp(CementApp):
     class Meta:
         label = 'lyricsifier'
         arguments_override_config = True
         base_controller = 'base'
-        handlers = [BaseController, CrawlController, ExtractController]
+        handlers = [BaseController, CrawlController,
+                    ExtractController, TagController]
 
 
 def main():

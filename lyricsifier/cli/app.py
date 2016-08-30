@@ -42,7 +42,10 @@ class CrawlController(ArgparseController):
         ]
     )
     def crawl(self):
-        crawler = MetroLyricsCrawler(self.app.pargs.output_file, int(self.app.pargs.max_delay))
+        crawler = MetroLyricsCrawler(
+            self.app.pargs.output_file,
+            int(self.app.pargs.max_delay)
+        )
         crawler.crawl()
 
 

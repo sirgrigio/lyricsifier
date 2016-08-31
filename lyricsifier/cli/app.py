@@ -29,9 +29,9 @@ class CrawlController(ArgparseController):
         arguments=[
             (['-o', '--output-file'],
              dict(
-                help='the output file (default ./target/metrolyrics.txt)',
+                help='the output file (default ./target/metrolyrics.tsv)',
                 action='store',
-                default='./target/metrolyrics.txt')
+                default='./target/metrolyrics.tsv')
              ),
             (['-d', '--max-delay'],
              dict(
@@ -63,9 +63,9 @@ class ExtractController(ArgparseController):
         arguments=[
             (['-o', '--output-file'],
              dict(
-                help='the output file (default ./target/lyrics.txt)',
+                help='the output file (default ./target/lyrics.tsv)',
                 action='store',
-                default='./target/lyrics.txt')
+                default='./target/lyrics.tsv')
              ),
             (['-p', '--processes'],
              dict(
@@ -104,9 +104,9 @@ class TagController(ArgparseController):
         arguments=[
             (['-o', '--output-file'],
              dict(
-                help='the output file (default ./target/tags.txt)',
+                help='the output file (default ./target/tags.tsv)',
                 action='store',
-                default='./target/tags.txt')
+                default='./target/tags.tsv')
              ),
             (['-p', '--processes'],
              dict(

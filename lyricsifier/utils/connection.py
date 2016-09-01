@@ -29,6 +29,6 @@ def open(request):
         if (e.errno == errno.ECONNRESET or
            e.errno == errno.ETIMEDOUT or
            e.errno == errno.ECONNABORTED):
-            SOFTConnError(e)
+            raise SOFTConnError(e)
         else:
-            FATALConnError(e)
+            raise FATALConnError(e)

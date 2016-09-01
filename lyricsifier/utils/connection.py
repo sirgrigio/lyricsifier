@@ -2,7 +2,6 @@ import errno
 import logging
 import urllib.request
 import urllib.error
-from socket import error as SocketError
 
 log = logging.getLogger(__name__)
 __temporary_errors_codes__ = [408, 500, 503, 504]
@@ -26,10 +25,10 @@ def open(request):
             raise FATALConnError(e)
     except urllib.error.URLError as e:
         raise SOFTConnError(e)
-    except SocketError as e:
-        if e.errno == errno.ECONNRESET or \
-           e.errno == errno.ETIMEDOUT or \
-           e.errno == errno.ECONNABORTED:
+    except OSError as e:
+        if (e.errno == errno.ECONNRESET or
+           e.errno == errno.ETIMEDOUT or
+           e.errno == errno.ECONNABORTED):
             SOFTConnError(e)
         else:
             FATALConnError(e)

@@ -1,4 +1,3 @@
-import errno
 import logging
 import urllib.request
 import urllib.error
@@ -25,10 +24,5 @@ def open(request):
             raise FATALConnError(e)
     except urllib.error.URLError as e:
         raise SOFTConnError(e)
-    except OSError as e:
-        if (e.errno == errno.ECONNRESET or
-           e.errno == errno.ETIMEDOUT or
-           e.errno == errno.ECONNABORTED):
-            raise SOFTConnError(e)
-        else:
-            raise FATALConnError(e)
+    except ConnectionError as e:
+        raise SOFTConnError(e)

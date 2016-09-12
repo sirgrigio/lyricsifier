@@ -7,7 +7,7 @@ setup(
     version='0.1',
     description='Attempt to classify songs by their lyrics',
     license='GPLv3',
-    url='https://github.com/zmcode/pyspeedo',
+    url='https://bitbucket.org/zmcode/lyricsifier',
     install_requires=['cement',
                       'bs4',
                       'unidecode',],

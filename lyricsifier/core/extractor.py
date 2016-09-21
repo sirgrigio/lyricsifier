@@ -35,7 +35,7 @@ class BaseExtractor(ABC):
         response = connection.open(request)
         if url != response.geturl():
             self.log.warning('redirected to {:s}'.format(response.geturl()))
-        html = response.read()
+        html = connection.read(response)
         return self.extractFromHTML(html)
 
 

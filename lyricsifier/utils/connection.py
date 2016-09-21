@@ -26,3 +26,16 @@ def open(request):
             raise SOFTConnError(e)
         else:
             raise FATALConnError(e)
+
+def read(response):
+    try:
+        return response.read()
+    except ConnectionError as e:
+        raise SOFTConnError(e)
+    except urllib.error.URLError as e:
+        raise SOFTConnError(e)
+    except urllib.error.HTTPError as e:
+        if e.code in __temporary_errors_codes__:
+            raise SOFTConnError(e)
+        else:
+            raise FATALConnError(e)

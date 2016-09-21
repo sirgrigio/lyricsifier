@@ -29,12 +29,12 @@ class BaseExtractor(ABC):
 
     def extractFromURL(self, url):
         if not self.canExtractFromURL(url):
-            raise URLError('{} cannot extract from URL {:s}'.format(self, url))
-        self.log.info('loading page at URL {:s}'.format(url))
+            raise URLError('{} cannot extract from URL {}'.format(self, url))
+        self.log.info('loading page at URL {}'.format(url))
         request = urllib.request.Request(url)
         response = connection.open(request)
         if url != response.geturl():
-            self.log.warning('redirected to {:s}'.format(response.geturl()))
+            self.log.warning('redirected to {}'.format(response.geturl()))
         html = connection.read(response)
         return self.extractFromHTML(html)
 

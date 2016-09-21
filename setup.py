@@ -8,8 +8,10 @@ setup(
     description='Attempt to classify songs by their lyrics',
     license='GPLv3',
     url='https://bitbucket.org/zmcode/lyricsifier',
-    install_requires=['cement',
-                      'bs4',
+    install_requires=['bs4',
+                      'cement',
+                      'nltk'
+                      'sklearn',
                       'unidecode',],
     packages=find_packages(),
     include_package_data=True,

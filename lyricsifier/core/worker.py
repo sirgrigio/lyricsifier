@@ -26,7 +26,7 @@ class BaseWorker(multiprocessing.Process):
         try:
             self.work()
         except Exception as e:
-            self.log.error(e)
+            self.log.exception(e)
             raise e
 
 

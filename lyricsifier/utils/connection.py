@@ -17,12 +17,12 @@ class FATALConnError(Exception):
 def open(request):
     try:
         return urllib.request.urlopen(request)
+    except ConnectionError as e:
+        raise SOFTConnError(e)
+    except urllib.error.URLError as e:
+        raise SOFTConnError(e)
     except urllib.error.HTTPError as e:
         if e.code in __temporary_errors_codes__:
             raise SOFTConnError(e)
         else:
             raise FATALConnError(e)
-    except urllib.error.URLError as e:
-        raise SOFTConnError(e)
-    except ConnectionError as e:
-        raise SOFTConnError(e)

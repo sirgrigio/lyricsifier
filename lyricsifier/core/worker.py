@@ -2,8 +2,8 @@ import csv
 import logging
 import multiprocessing
 import time
-from lyricsifier.utils import normalization as nutils
-from lyricsifier.utils.connection import SOFTConnError, FATALConnError
+from lyricsifier.core.utils import normalization as nutils
+from lyricsifier.core.utils.connection import SOFTConnError, FATALConnError
 from unidecode import unidecode
 
 

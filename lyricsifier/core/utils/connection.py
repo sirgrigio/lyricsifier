@@ -27,6 +27,7 @@ def open(request):
         else:
             raise FATALConnError(e)
 
+
 def read(response):
     try:
         return response.read()

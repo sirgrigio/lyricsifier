@@ -3,7 +3,7 @@ import json
 import urllib.parse
 import urllib.request
 from abc import ABC, abstractmethod
-from lyricsifier.utils import connection
+from lyricsifier.core.utils import connection
 
 
 class BaseTagger(ABC):

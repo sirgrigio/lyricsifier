@@ -1,6 +1,6 @@
 import unittest
 from lyricsifier.core.tagger import LastFMTagger
-from lyricsifier.utils import logging
+from lyricsifier.cli.utils import logging
 
 
 class TestLastFM(unittest.TestCase):

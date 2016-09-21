@@ -7,8 +7,8 @@ import urllib.request
 import urllib.error
 from bs4 import BeautifulSoup
 from string import ascii_lowercase
-from lyricsifier.utils import connection, file, normalization as nutils
-from lyricsifier.utils.connection import SOFTConnError, FATALConnError
+from lyricsifier.core.utils import connection, file, normalization as nutils
+from lyricsifier.core.utils.connection import SOFTConnError, FATALConnError
 
 
 class MetroLyricsCrawler:

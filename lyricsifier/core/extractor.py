@@ -4,7 +4,7 @@ import urllib.request
 import urllib.error
 from abc import ABC, abstractmethod
 from bs4 import BeautifulSoup
-from lyricsifier.utils import connection, normalization as nutils
+from lyricsifier.core.utils import connection, normalization as nutils
 
 
 class URLError(Exception):

@@ -1,5 +1,5 @@
 import unittest
-from lyricsifier.utils import logging
+from lyricsifier.cli.utils import logging
 from lyricsifier.core.extractor \
     import MetroLyricsExtractor, LyricsComExtractor, \
     LyricsModeExtractor, AZLyricsExtractor, URLError

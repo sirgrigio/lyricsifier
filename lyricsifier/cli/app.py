@@ -2,7 +2,7 @@ from cement.core.foundation import CementApp
 from cement.ext.ext_argparse import ArgparseController, expose
 from lyricsifier.core.crawler import MetroLyricsCrawler
 from lyricsifier.core.job import ExtractJob, TagJob
-from lyricsifier.utils import logging
+from lyricsifier.cli.utils import logging
 
 
 class BaseController(ArgparseController):

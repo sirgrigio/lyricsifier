@@ -7,7 +7,7 @@ from lyricsifier.core.extractor \
     LyricsModeExtractor, AZLyricsExtractor
 from lyricsifier.core.tagger import LastFMTagger
 from lyricsifier.core.worker import ExtractWorker, TagWorker
-from lyricsifier.utils import csv as csvutils, file
+from lyricsifier.core.utils import csv as csvutils, file
 
 
 class ExtractJob:

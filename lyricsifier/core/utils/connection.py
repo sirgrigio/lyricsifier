@@ -1,4 +1,5 @@
 import logging
+import http
 import urllib.request
 import urllib.error
 
@@ -19,6 +20,8 @@ def open(request):
         return urllib.request.urlopen(request)
     except ConnectionError as e:
         raise SOFTConnError(e)
+    except http.client.IncompleteRead as e:
+        raise SOFTConnError(e)
     except urllib.error.URLError as e:
         raise SOFTConnError(e)
     except urllib.error.HTTPError as e:
@@ -32,6 +35,8 @@ def read(response):
     try:
         return response.read()
     except ConnectionError as e:
+        raise SOFTConnError(e)
+    except http.client.IncompleteRead as e:
         raise SOFTConnError(e)
     except urllib.error.URLError as e:
         raise SOFTConnError(e)

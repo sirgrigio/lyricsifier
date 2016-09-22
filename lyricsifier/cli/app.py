@@ -102,6 +102,12 @@ class TagController(ArgparseController):
     @expose(
         help="tag the given tracks",
         arguments=[
+            (['-g', '--genres-file'],
+             dict(
+                help='a json file containing genres hierarchy (default ./genres.json)',
+                action='store',
+                default='./genres.json')
+             ),
             (['-o', '--output-file'],
              dict(
                 help='the output file (default ./target/tags.tsv)',
@@ -123,9 +129,20 @@ class TagController(ArgparseController):
         ]
     )
     def tag(self):
+        import json
+        from lyricsifier.core.tagger import LastFMTagger
+        genres = {}
+        with open(self.app.pargs.genres_file, 'r', encoding='utf8') as f:
+            genres_json = json.load(f)
+            genres = {g['genre']: g['subgenres'] for g in genres_json}
+        tagger = LastFMTagger(
+            'ac5188f22006a4ef88c6b83746b11118',
+            genres
+        )
         job = TagJob(
             self.app.pargs.file[0],
             self.app.pargs.output_file,
+            taggers=[tagger, ],
             processes=int(self.app.pargs.processes)
         )
         job.start()

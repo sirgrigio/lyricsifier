@@ -15,7 +15,7 @@ class ExtractJob:
     __extractors__ = [MetroLyricsExtractor(), LyricsComExtractor(),
                       LyricsModeExtractor(), AZLyricsExtractor(), ]
 
-    def __init__(self, fin, fout, processes=1, extractors=__extractors__):
+    def __init__(self, fin, fout, extractors=__extractors__, processes=1):
         self.fin = fin
         self.fout = fout
         self.processes = processes
@@ -85,9 +85,7 @@ class ExtractJob:
 
 class TagJob:
 
-    __taggers__ = [LastFMTagger(api_key='ac5188f22006a4ef88c6b83746b11118'), ]
-
-    def __init__(self, fin, fout, processes=1, taggers=__taggers__):
+    def __init__(self, fin, fout, taggers, processes=1):
         self.fin = fin
         self.fout = fout
         self.processes = processes

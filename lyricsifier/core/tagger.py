@@ -3,6 +3,7 @@ import json
 import urllib.parse
 import urllib.request
 from abc import ABC, abstractmethod
+from unidecode import unidecode
 from lyricsifier.core.utils import connection
 
 
@@ -25,10 +26,14 @@ class BaseTagger(ABC):
 
 class LastFMTagger(BaseTagger):
 
-    def __init__(self, api_key):
+    def __init__(self, api_key, genres):
         BaseTagger.__init__(self)
         self.api_key = api_key
         self.base_url = "http://ws.audioscrobbler.com/2.0/"
+        self.genres = genres
+
+    def _topGenres(self):
+        return {g: 0 for g in self.genres}
 
     def _request(self, params):
         self.log.info(
@@ -46,8 +51,20 @@ class LastFMTagger(BaseTagger):
         if error:
             self.log.error(json_data['message'])
             return None
-        toptags = json_data['toptags']['tag']
-        return toptags[0]['name'] if toptags else None
+        return json_data['toptags']['tag']
+
+    def _best(self, tags):
+        if not tags:
+            return None
+        topGenres = self._topGenres()
+        for tag in tags:
+            t = unidecode(tag['name']).lower()
+            c = int(tag['count'])
+            for g in topGenres:
+                if t == g or t in self.genres[g]:
+                    topGenres[g] += c
+                    break
+        return max(topGenres, key=lambda g: topGenres[g])
 
     def tagArtist(self, artist):
         params = {
@@ -57,7 +74,8 @@ class LastFMTagger(BaseTagger):
             'format': 'json'
         }
         response = self._request(params)
-        return self._parse(response)
+        tags = self._parse(response)
+        return self._best(tags)
 
     def tagTrack(self, artist, title):
         params = {
@@ -68,4 +86,5 @@ class LastFMTagger(BaseTagger):
             'format': 'json'
         }
         response = self._request(params)
-        return self._parse(response)
+        tags = self._parse(response)
+        return self._best(tags)

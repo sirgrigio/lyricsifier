@@ -10,7 +10,7 @@ setup(
     url='https://bitbucket.org/zmcode/lyricsifier',
     install_requires=['bs4',
                       'cement',
-                      'nltk'
+                      'nltk',
                       'sklearn',
                       'unidecode',],
     packages=find_packages(),

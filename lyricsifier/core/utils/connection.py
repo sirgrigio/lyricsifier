@@ -18,11 +18,8 @@ class FATALConnError(Exception):
 def open(request):
     try:
         return urllib.request.urlopen(request)
-    except ConnectionError as e:
-        raise SOFTConnError(e)
-    except http.client.IncompleteRead as e:
-        raise SOFTConnError(e)
-    except urllib.error.URLError as e:
+    except (ConnectionError, http.client.IncompleteRead,
+            urllib.error.URLError) as e:
         raise SOFTConnError(e)
     except urllib.error.HTTPError as e:
         if e.code in __temporary_errors_codes__:
@@ -34,11 +31,8 @@ def open(request):
 def read(response):
     try:
         return response.read()
-    except ConnectionError as e:
-        raise SOFTConnError(e)
-    except http.client.IncompleteRead as e:
-        raise SOFTConnError(e)
-    except urllib.error.URLError as e:
+    except (ConnectionError, http.client.IncompleteRead,
+            urllib.error.URLError) as e:
         raise SOFTConnError(e)
     except urllib.error.HTTPError as e:
         if e.code in __temporary_errors_codes__:

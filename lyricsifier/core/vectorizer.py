@@ -37,3 +37,4 @@ class LyricsVectorizer:
         self.log.info(
             'vectorization completed - {:d} features and {:d} samples'
             .format(corpus_matrix.shape[0], corpus_matrix.shape[1]))
+        return corpus_matrix

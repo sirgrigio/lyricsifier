@@ -1,7 +1,7 @@
 from cement.core.foundation import CementApp
 from cement.ext.ext_argparse import ArgparseController, expose
 from lyricsifier.core.crawler import MetroLyricsCrawler
-from lyricsifier.core.job import ExtractJob, TagJob
+from lyricsifier.core.job import ClassifyJob, ClusterJob, ExtractJob, TagJob
 from lyricsifier.cli.utils import logging
 
 
@@ -148,13 +148,91 @@ class TagController(ArgparseController):
         job.start()
 
 
+class ClusterController(ArgparseController):
+    class Meta:
+        label = 'cluster'
+        stacked_on = 'base'
+
+    @expose(hide=True)
+    def default(self):
+        pass
+
+    @expose(
+        help="tag the given tracks",
+        arguments=[
+            (['lyrics_file'],
+             dict(
+                help='the file containg tracks lyrics',
+                action='store')
+             ),
+            (['tags_file'],
+             dict(
+                help='the file containg tracks tags',
+                action='store')
+             ),
+            (['-r', '--runs'],
+             dict(
+                help='number of k-means clustering runs (default 10)',
+                action='store',
+                default=10)
+             ),
+        ]
+    )
+    def cluster(self):
+        job = ClusterJob(
+            self.app.pargs.lyrics_file,
+            self.app.pargs.tags_file,
+            self.app.pargs.runs
+        )
+        job.start()
+
+
+class ClassifyController(ArgparseController):
+    class Meta:
+        label = 'classify'
+        stacked_on = 'base'
+
+    @expose(hide=True)
+    def default(self):
+        pass
+
+    @expose(
+        help="tag the given tracks",
+        arguments=[
+            (['lyrics_file'],
+             dict(
+                help='the file containg tracks lyrics',
+                action='store')
+             ),
+            (['tags_file'],
+             dict(
+                help='the file containg tracks tags',
+                action='store')
+             ),
+            (['-r', '--report-dir'],
+             dict(
+                help='the directory to save the reports to (default ./target/report/)',
+                action='store',
+                default='./target/report/')
+             ),
+        ]
+    )
+    def classify(self):
+        job = ClassifyJob(
+            self.app.pargs.lyrics_file,
+            self.app.pargs.tags_file,
+            self.app.pargs.report_dir,
+        )
+        job.start()
+
+
 class LyricsifierApp(CementApp):
     class Meta:
         label = 'lyricsifier'
         arguments_override_config = True
         base_controller = 'base'
-        handlers = [BaseController, CrawlController,
-                    ExtractController, TagController]
+        handlers = [BaseController, ClassifyController, ClusterController,
+                    CrawlController, ExtractController, TagController]
 
 
 def main():
@@ -162,6 +240,7 @@ def main():
         logging.loadcfg()
         app.setup()
         app.run()
+
 
 if __name__ == '__main__':
     main()

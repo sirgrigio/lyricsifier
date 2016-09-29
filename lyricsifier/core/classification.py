@@ -87,10 +87,10 @@ class SupervisedAlgorithm(LearningAlgorithm):
 
     def run(self):
         self.log.info('starting {:s}'.format(self.name))
-        self.pct.fit(self.trainset.data, self.trainset.target)
+        self.algorithm.fit(self.trainset.data, self.trainset.target)
         self.log.info('{:s} training completed'.format(self.name))
         self.log.info('running {:s} on testset'.format(self.name))
-        predictions = self.pct.predict(self.testset.data)
+        predictions = self.algorithm.predict(self.testset.data)
         accuracy = metrics.accuracy_score(self.testset.target, predictions)
         self.log.info(
             '{:s} accuracy score: {:.3f}'.format(self.name, accuracy))

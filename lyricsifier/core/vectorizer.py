@@ -29,12 +29,12 @@ class LyricsVectorizer:
         )
         self.log = logging.getLogger(__name__)
 
-    def vectorize(self, corpus):
+    def vectorize(self, corpus, fit=True):
         self.log.info('vectorizing {:d} documents'.format(len(corpus)))
+        self.log.info('using corpus to learn idf: {}'.format(fit))
+        self.log.info('vectorization started - this may require several minutes to complete')
+        corpus_matrix = self.vectorizer.fit_transform(corpus) if fit else self.vectorizer.transform(corpus)
         self.log.info(
-            'vectorization started - this may require several minutes to complete')
-        corpus_matrix = self.vectorizer.fit_transform(corpus)
-        self.log.info(
-            'vectorization completed - {:d} features and {:d} samples'
+            'vectorization completed - {:d} samples and {:d} features'
             .format(corpus_matrix.shape[0], corpus_matrix.shape[1]))
         return corpus_matrix

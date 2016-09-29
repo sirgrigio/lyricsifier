@@ -101,6 +101,7 @@ class PerceptronAlgorithm(SupervisedAlgorithm):
 
     def __init__(self, trainset, testset):
         SupervisedAlgorithm.__init__(
+            self,
             'perceptron',
             Perceptron(n_iter=50),
             trainset,
@@ -112,6 +113,7 @@ class MultinomialNBAlgorithm(SupervisedAlgorithm):
 
     def __init__(self, trainset, testset):
         SupervisedAlgorithm.__init__(
+            self,
             'multinomialnb',
             MultinomialNB(alpha=0.01),
             trainset,

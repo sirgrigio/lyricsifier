@@ -22,7 +22,7 @@ class Dataset():
         self.data = vectorizer.vectorize(self.data, fit=fit)
 
     def selectBestFeatures(self, selector, k, fit=True):
-        self.log.info('extracting best {:d} features'.format(k))
+        self.log.info('extracting best {} features'.format(k))
         self.log.info('using dataset to fit: {}'.format(fit))
         self.data = selector.fit_transform(self.data, self.target) if fit else selector.transform(self.data, self.target)
 

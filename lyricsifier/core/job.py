@@ -229,8 +229,9 @@ class ClassifyJob():
         for k in ['all', features // 2, features // 4, features // 8]:
             trainset = Dataset(self.trainset.data, self.trainset.target)
             testset = Dataset(self.testset.data, self.testset.target)
-            trainset.selectBestFeatures(self.chisquared, k)
-            testset.selectBestFeatures(self.chisquared, k, fit=False)
+            if k != 'all':
+                trainset.selectBestFeatures(self.chisquared, k)
+                testset.selectBestFeatures(self.chisquared, k, fit=False)
             algorithms = [
                 PerceptronAlgorithm(trainset, testset),
                 MultinomialNBAlgorithm(trainset, testset)
@@ -245,4 +246,5 @@ class ClassifyJob():
                     'w', encoding='utf8'
                 ) as fout:
                     print(report, file=fout)
+                    self.log.info('report written to {}'.format(filename))
         self.log.info('clustering job completed')

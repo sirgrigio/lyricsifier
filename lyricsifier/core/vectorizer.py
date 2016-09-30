@@ -25,6 +25,7 @@ class LyricsVectorizer:
             min_df=min_df,
             max_df=max_df,
             tokenizer=tokenizer,
+            norm='l2',
             sublinear_tf=True
         )
         self.log = logging.getLogger(__name__)

@@ -165,6 +165,7 @@ class ClusterJob():
         self.flyrics = lyrics_file
         self.ftags = tags_file
         self.runs = runs
+        self.vectorizer = LyricsVectorizer()
         self.log = logging.getLogger(__name__)
 
     def _buildDataset(self):
@@ -185,6 +186,7 @@ class ClusterJob():
     def start(self):
         self.log.info('setting up')
         dataset = self._buildDataset()
+        dataset.vectorize(self.vectorizer)
         kmc = KMeansAlgorithm(dataset, self.runs)
         kmc.run()
         self.log.info('clustering job completed')

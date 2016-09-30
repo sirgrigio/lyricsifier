@@ -58,6 +58,7 @@ class KMeansAlgorithm(LearningAlgorithm):
 
     def __init__(self, dataset, runs=10):
         LearningAlgorithm.__init__(self)
+        self.dataset = dataset
         self.km = KMeans(
             n_clusters=numpy.unique(dataset.target).shape[0],
             n_init=runs,
@@ -66,7 +67,6 @@ class KMeansAlgorithm(LearningAlgorithm):
 
     def run(self):
         X = self.dataset
-        X.vectorize(self.vectorizer)
         self.log.info('starting k-means clustering')
         self.km.fit(X.data)
         self.log.info('k-means clustering completed - computing scores')

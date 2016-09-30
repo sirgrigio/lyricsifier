@@ -226,7 +226,8 @@ class ClassifyJob():
     def start(self):
         self._setUp()
         features = self.trainset.data.shape[1]
-        for k in ['all', features // 2, features // 4, features // 8]:
+        for k in ['all', features // 2, features // 4,
+                  features // 8, features // 16]:
             trainset = Dataset(self.trainset.data, self.trainset.target)
             testset = Dataset(self.testset.data, self.testset.target)
             if k != 'all':

@@ -5,6 +5,7 @@ import random
 from abc import ABC, abstractmethod
 from sklearn import metrics
 from sklearn.cluster import KMeans
+from sklearn.ensemble import RandomForestClassifier
 from sklearn.linear_model import Perceptron
 from sklearn.naive_bayes import MultinomialNB
 
@@ -116,6 +117,20 @@ class MultinomialNBAlgorithm(SupervisedAlgorithm):
             self,
             'multinomialnb',
             MultinomialNB(alpha=0.01),
+            trainset,
+            testset
+        )
+
+
+class RandomForestAlgorithm(SupervisedAlgorithm):
+
+    def __init__(self, trainset, testset):
+        SupervisedAlgorithm.__init__(
+            self,
+            'randomforest',
+            RandomForestClassifier(
+                n_jobs=-1
+            ),
             trainset,
             testset
         )

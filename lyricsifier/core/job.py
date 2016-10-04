@@ -5,7 +5,7 @@ import tempfile
 from sklearn.feature_selection import SelectKBest, chi2
 from lyricsifier.core.classification \
     import Dataset, KMeansAlgorithm, PerceptronAlgorithm, \
-    MultinomialNBAlgorithm
+    MultinomialNBAlgorithm, RandomForestAlgorithm
 from lyricsifier.core.extractor \
     import MetroLyricsExtractor, LyricsComExtractor, \
     LyricsModeExtractor, AZLyricsExtractor
@@ -237,7 +237,8 @@ class ClassifyJob():
                 testset.selectBestFeatures(self.chisquared, k, fit=False)
             algorithms = [
                 PerceptronAlgorithm(trainset, testset),
-                MultinomialNBAlgorithm(trainset, testset)
+                MultinomialNBAlgorithm(trainset, testset),
+                RandomForestAlgorithm(trainset, testset)
             ]
             for alg in algorithms:
                 self.log.info(

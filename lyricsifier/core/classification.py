@@ -91,7 +91,6 @@ class KMeansAlgorithm(UnsupervisedAlgorithm):
                 n_clusters=numpy.unique(dataset.target).shape[0],
                 n_init=runs,
                 max_iter=100,
-                n_jobs=-1,
                 verbose=True
             ),
             dataset
@@ -117,9 +116,7 @@ class DBScanAlgorithm(UnsupervisedAlgorithm):
         UnsupervisedAlgorithm.__init__(
             self,
             'dbscan',
-            DBSCAN(
-                n_jobs=-1
-            ),
+            DBSCAN(),
             dataset
         )
 
@@ -181,7 +178,6 @@ class RandomForestAlgorithm(SupervisedAlgorithm):
             self,
             'randomforest',
             RandomForestClassifier(
-                n_jobs=-1,
                 verbose=1
             ),
             trainset,

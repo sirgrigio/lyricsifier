@@ -98,6 +98,19 @@ class KMeansAlgorithm(UnsupervisedAlgorithm):
         )
 
 
+class AffinityPropagation(UnsupervisedAlgorithm):
+
+    def __init__(self, dataset):
+        UnsupervisedAlgorithm.__init__(
+            self,
+            'affinity-propagation',
+            AffinityPropagation(
+                verbose=True
+            ),
+            dataset
+        )
+
+
 class DBScanAlgorithm(UnsupervisedAlgorithm):
 
     def __init__(self, dataset):
@@ -105,7 +118,6 @@ class DBScanAlgorithm(UnsupervisedAlgorithm):
             self,
             'dbscan',
             DBSCAN(
-                n_clusters=numpy.unique(dataset.target).shape[0],
                 n_jobs=-1,
                 verbose=True
             ),

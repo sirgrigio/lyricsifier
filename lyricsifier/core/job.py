@@ -191,7 +191,7 @@ class ClusterJob():
         dataset.vectorize(self.vectorizer)
         algorithms = [
             KMeansAlgorithm(dataset, self.runs),
-            AffinityPropagation(dataset),
+            # AffinityPropagation(dataset),
             DBScanAlgorithm(dataset)
         ]
         for alg in algorithms:

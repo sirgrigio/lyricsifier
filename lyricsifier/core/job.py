@@ -262,4 +262,4 @@ class ClassifyJob():
                     print(report, file=fout)
                     self.log.info('report written to {}'.format(filename))
                     # self._plotReport(report, alg, k)
-        self.log.info('clustering job completed')
+        self.log.info('classify job completed')

@@ -4,7 +4,7 @@ import numpy
 import random
 from abc import ABC, abstractmethod
 from sklearn import metrics
-from sklearn.cluster import KMeans, DBSCAN
+from sklearn.cluster import AffinityPropagation, KMeans, DBSCAN
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.linear_model import Perceptron
 from sklearn.naive_bayes import MultinomialNB
@@ -98,7 +98,7 @@ class KMeansAlgorithm(UnsupervisedAlgorithm):
         )
 
 
-class AffinityPropagation(UnsupervisedAlgorithm):
+class AffinityPropagationAlgorithm(UnsupervisedAlgorithm):
 
     def __init__(self, dataset):
         UnsupervisedAlgorithm.__init__(

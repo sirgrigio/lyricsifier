@@ -4,7 +4,7 @@ import numpy
 import random
 from abc import ABC, abstractmethod
 from sklearn import metrics
-from sklearn.cluster import KMeans
+from sklearn.cluster import KMeans, DBSCAN
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.linear_model import Perceptron
 from sklearn.naive_bayes import MultinomialNB
@@ -57,26 +57,60 @@ class LearningAlgorithm(ABC):
         pass
 
 
-class KMeansAlgorithm(LearningAlgorithm):
+class UnsupervisedAlgorithm(LearningAlgorithm):
 
-    def __init__(self, dataset, runs=10):
+    def __init__(self, name, algorithm, dataset):
         LearningAlgorithm.__init__(self)
+        self.name = name
+        self.algorithm = algorithm
         self.dataset = dataset
-        self.km = KMeans(
-            n_clusters=numpy.unique(dataset.target).shape[0],
-            n_init=runs,
-            verbose=True
-        )
 
     def run(self):
         X = self.dataset
-        self.log.info('starting k-means clustering')
-        self.km.fit(X.data)
-        self.log.info('k-means clustering completed - computing scores')
-        homogeneity = metrics.homogeneity_score(X.target, self.km.labels_)
-        completeness = metrics.completeness_score(X.target, self.km.labels_)
-        self.log.info('homogeneity score: {:.3f}'.format(homogeneity))
-        self.log.info('completeness score: {:.3f}'.format(completeness))
+        self.log.info('starting {} clustering'.format(self.name))
+        self.algorithm.fit(X.data)
+        self.log.info(
+            '{} clustering completed - computing scores'.format(self.name))
+        homogeneity = metrics.homogeneity_score(
+            X.target, self.algorithm.labels_)
+        completeness = metrics.completeness_score(
+            X.target, self.algorithm.labels_)
+        self.log.info(
+            '{} homogeneity score: {:.3f}'.format(self.name, homogeneity))
+        self.log.info(
+            '{} completeness score: {:.3f}'.format(self.name, completeness))
+
+
+class KMeansAlgorithm(UnsupervisedAlgorithm):
+
+    def __init__(self, dataset, runs=10):
+        UnsupervisedAlgorithm.__init__(
+            self,
+            'k-means',
+            KMeans(
+                n_clusters=numpy.unique(dataset.target).shape[0],
+                n_init=runs,
+                max_iter=100,
+                n_jobs=-1,
+                verbose=True
+            ),
+            dataset
+        )
+
+
+class DBScanAlgorithm(UnsupervisedAlgorithm):
+
+    def __init__(self, dataset):
+        UnsupervisedAlgorithm.__init__(
+            self,
+            'dbscan',
+            DBSCAN(
+                n_clusters=numpy.unique(dataset.target).shape[0],
+                n_jobs=-1,
+                verbose=True
+            ),
+            dataset
+        )
 
 
 class SupervisedAlgorithm(LearningAlgorithm):

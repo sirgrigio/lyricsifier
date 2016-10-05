@@ -5,7 +5,7 @@ import os
 import tempfile
 from sklearn.feature_selection import SelectKBest, chi2
 from lyricsifier.core.classification \
-    import Dataset, KMeansAlgorithm, PerceptronAlgorithm, \
+    import Dataset, KMeansAlgorithm, DBScanAlgorithm, PerceptronAlgorithm, \
     MultinomialNBAlgorithm, RandomForestAlgorithm, \
     SVMAlgorithm, MLPAlgorithm
 from lyricsifier.core.extractor \
@@ -189,8 +189,12 @@ class ClusterJob():
         self.log.info('setting up')
         dataset = self._buildDataset()
         dataset.vectorize(self.vectorizer)
-        kmc = KMeansAlgorithm(dataset, self.runs)
-        kmc.run()
+        algorithms = [
+            KMeansAlgorithm(dataset, self.runs),
+            DBScanAlgorithm(dataset)
+        ]
+        for alg in algorithms:
+            alg.run()
         self.log.info('clustering job completed')
 
 

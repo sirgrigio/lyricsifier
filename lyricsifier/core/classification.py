@@ -118,8 +118,7 @@ class DBScanAlgorithm(UnsupervisedAlgorithm):
             self,
             'dbscan',
             DBSCAN(
-                n_jobs=-1,
-                verbose=True
+                n_jobs=-1
             ),
             dataset
         )

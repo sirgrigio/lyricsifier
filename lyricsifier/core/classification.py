@@ -198,7 +198,7 @@ class SVMAlgorithm(SupervisedAlgorithm):
             'svm',
             SVC(
                 tol=0.05,
-                versose=True
+                verbose=True
             ),
             trainset,
             testset

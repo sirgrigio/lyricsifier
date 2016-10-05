@@ -8,6 +8,8 @@ from sklearn.cluster import KMeans
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.linear_model import Perceptron
 from sklearn.naive_bayes import MultinomialNB
+from sklearn.neural_network import MLPClassifier
+from sklearn.svm import SVC
 
 
 class Dataset():
@@ -130,6 +132,35 @@ class RandomForestAlgorithm(SupervisedAlgorithm):
             'randomforest',
             RandomForestClassifier(
                 n_jobs=-1
+            ),
+            trainset,
+            testset
+        )
+
+
+class SVMAlgorithm(SupervisedAlgorithm):
+
+    def __init__(self, trainset, testset):
+        SupervisedAlgorithm.__init__(
+            self,
+            'svm',
+            SVC(),
+            trainset,
+            testset
+        )
+
+
+class MLPAlgorithm(SupervisedAlgorithm):
+
+    def __init__(self, trainset, testset):
+        SupervisedAlgorithm.__init__(
+            self,
+            'mlp',
+            MLPClassifier(
+                solver='lbfgs',
+                alpha=1e-5,
+                hidden_layer_sizes=(5, 2),
+                random_state=1
             ),
             trainset,
             testset

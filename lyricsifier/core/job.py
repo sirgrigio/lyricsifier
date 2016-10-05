@@ -1,3 +1,4 @@
+
 import csv
 import logging
 import os
@@ -5,13 +6,14 @@ import tempfile
 from sklearn.feature_selection import SelectKBest, chi2
 from lyricsifier.core.classification \
     import Dataset, KMeansAlgorithm, PerceptronAlgorithm, \
-    MultinomialNBAlgorithm, RandomForestAlgorithm
+    MultinomialNBAlgorithm, RandomForestAlgorithm, \
+    SVMAlgorithm, MLPAlgorithm
 from lyricsifier.core.extractor \
     import MetroLyricsExtractor, LyricsComExtractor, \
     LyricsModeExtractor, AZLyricsExtractor
 from lyricsifier.core.vectorizer import LyricsVectorizer
 from lyricsifier.core.worker import ExtractWorker, TagWorker
-from lyricsifier.core.utils import csv as csvutils, file
+from lyricsifier.core.utils import csv as csvutils, file  # , plot
 
 
 class ExtractJob:
@@ -225,6 +227,12 @@ class ClassifyJob():
         self.trainset.vectorize(self.vectorizer)
         self.testset.vectorize(self.vectorizer, fit=False)
 
+    # def _plotReport(self, report, alg, k):
+    #     title = '{} - {} features'.format(alg.name.upper(), k)
+    #     filename = '{}_{}.png'.formate(alg.name, k)
+    #     plot.plot_report_to_file(report, title, filename)
+    #     self.log.info('report plotted to {}'.format(filename))
+
     def start(self):
         self._setUp()
         features = self.trainset.data.shape[1]
@@ -238,7 +246,9 @@ class ClassifyJob():
             algorithms = [
                 PerceptronAlgorithm(trainset, testset),
                 MultinomialNBAlgorithm(trainset, testset),
-                RandomForestAlgorithm(trainset, testset)
+                RandomForestAlgorithm(trainset, testset),
+                SVMAlgorithm(trainset, testset),
+                MLPAlgorithm(trainset, testset)
             ]
             for alg in algorithms:
                 self.log.info(
@@ -251,4 +261,5 @@ class ClassifyJob():
                 ) as fout:
                     print(report, file=fout)
                     self.log.info('report written to {}'.format(filename))
+                    # self._plotReport(report, alg, k)
         self.log.info('clustering job completed')

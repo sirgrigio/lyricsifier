@@ -106,7 +106,10 @@ class PerceptronAlgorithm(SupervisedAlgorithm):
         SupervisedAlgorithm.__init__(
             self,
             'perceptron',
-            Perceptron(n_iter=50),
+            Perceptron(
+                n_iter=50,
+                verbose=1
+            ),
             trainset,
             testset
         )
@@ -118,7 +121,9 @@ class MultinomialNBAlgorithm(SupervisedAlgorithm):
         SupervisedAlgorithm.__init__(
             self,
             'multinomialnb',
-            MultinomialNB(alpha=0.01),
+            MultinomialNB(
+                alpha=0.01
+            ),
             trainset,
             testset
         )
@@ -131,7 +136,8 @@ class RandomForestAlgorithm(SupervisedAlgorithm):
             self,
             'randomforest',
             RandomForestClassifier(
-                n_jobs=-1
+                n_jobs=-1,
+                verbose=1
             ),
             trainset,
             testset
@@ -144,7 +150,10 @@ class SVMAlgorithm(SupervisedAlgorithm):
         SupervisedAlgorithm.__init__(
             self,
             'svm',
-            SVC(),
+            SVC(
+                tol=0.05,
+                versose=True
+            ),
             trainset,
             testset
         )
@@ -160,7 +169,8 @@ class MLPAlgorithm(SupervisedAlgorithm):
                 solver='lbfgs',
                 alpha=1e-5,
                 hidden_layer_sizes=(5, 2),
-                random_state=1
+                random_state=1,
+                verbose=True
             ),
             trainset,
             testset

@@ -197,7 +197,7 @@ class ClusterJob():
             dataset.vectorize(self.vectorizer)
             if self.dump:
                 self.log.info('dumping dataset to {}'.format(self.dump))
-                with open(self.dump, 'r', encoding='utf8') as du:
+                with open(self.dump, 'w', encoding='utf8') as du:
                     pickle.dump(dataset, du)
             return dataset
 

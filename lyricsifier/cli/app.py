@@ -35,7 +35,8 @@ class CrawlController(ArgparseController):
              ),
             (['-d', '--max-delay'],
              dict(
-                help='the max amount of seconds between two requests (default 300)',
+                help='''the max amount of seconds between two requests
+                        (default 300)''',
                 action='store',
                 default=300)
              ),
@@ -104,7 +105,8 @@ class TagController(ArgparseController):
         arguments=[
             (['-g', '--genres-file'],
              dict(
-                help='a json file containing genres hierarchy (default ./genres.json)',
+                help='''a json file containing genres hierarchy
+                        (default ./genres.json)''',
                 action='store',
                 default='./genres.json')
              ),
@@ -170,11 +172,11 @@ class ClusterController(ArgparseController):
                 help='the file containg tracks tags',
                 action='store')
              ),
-            (['-r', '--runs'],
+            (['-p', '--processes'],
              dict(
-                help='number of k-means clustering runs (default 10)',
+                help='number of parallel processes (default 1)',
                 action='store',
-                default=10)
+                default=1)
              ),
         ]
     )
@@ -182,7 +184,7 @@ class ClusterController(ArgparseController):
         job = ClusterJob(
             self.app.pargs.lyrics_file,
             self.app.pargs.tags_file,
-            self.app.pargs.runs
+            processes=int(self.app.pargs.processes)
         )
         job.start()
 
@@ -211,9 +213,16 @@ class ClassifyController(ArgparseController):
              ),
             (['-r', '--report-dir'],
              dict(
-                help='the directory to save the reports to (default ./target/report/)',
+                help='''the directory to save the reports to
+                        (default ./target/report/)''',
                 action='store',
                 default='./target/report/')
+             ),
+            (['-p', '--processes'],
+             dict(
+                help='number of parallel processes (default 1)',
+                action='store',
+                default=1)
              ),
         ]
     )
@@ -222,6 +231,7 @@ class ClassifyController(ArgparseController):
             self.app.pargs.lyrics_file,
             self.app.pargs.tags_file,
             self.app.pargs.report_dir,
+            processes=int(self.app.pargs.processes)
         )
         job.start()
 

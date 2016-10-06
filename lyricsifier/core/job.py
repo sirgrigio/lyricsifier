@@ -163,10 +163,10 @@ class TagJob:
 
 class ClusterJob():
 
-    def __init__(self, lyrics_file, tags_file, runs=10):
+    def __init__(self, lyrics_file, tags_file, processes=1):
         self.flyrics = lyrics_file
         self.ftags = tags_file
-        self.runs = runs
+        self.processes = processes
         self.vectorizer = LyricsVectorizer()
         self.log = logging.getLogger(__name__)
 
@@ -190,9 +190,9 @@ class ClusterJob():
         dataset = self._buildDataset()
         dataset.vectorize(self.vectorizer)
         algorithms = [
-            KMeansAlgorithm(dataset, self.runs),
-            # AffinityPropagation(dataset),
-            DBScanAlgorithm(dataset)
+            KMeansAlgorithm(dataset, self.processes),
+            AffinityPropagation(dataset),
+            DBScanAlgorithm(dataset, self.processes)
         ]
         for alg in algorithms:
             alg.run()
@@ -201,12 +201,12 @@ class ClusterJob():
 
 class ClassifyJob():
 
-    def __init__(self, lyrics_file, tags_file, outdir):
+    def __init__(self, lyrics_file, tags_file, outdir, processes=1):
         self.flyrics = lyrics_file
         self.ftags = tags_file
         self.outdir = outdir
+        self.processes = processes
         self.vectorizer = LyricsVectorizer()
-        self.chisquared = SelectKBest(chi2)
         self.log = logging.getLogger(__name__)
 
     def _buildDataset(self):
@@ -232,39 +232,25 @@ class ClassifyJob():
         self.trainset.vectorize(self.vectorizer)
         self.testset.vectorize(self.vectorizer, fit=False)
 
-    # def _plotReport(self, report, alg, k):
-    #     title = '{} - {} features'.format(alg.name.upper(), k)
-    #     filename = '{}_{}.png'.formate(alg.name, k)
-    #     plot.plot_report_to_file(report, title, filename)
-    #     self.log.info('report plotted to {}'.format(filename))
-
     def start(self):
         self._setUp()
-        features = self.trainset.data.shape[1]
-        for k in ['all', features // 2, features // 4,
-                  features // 8, features // 16]:
-            trainset = Dataset(self.trainset.data, self.trainset.target)
-            testset = Dataset(self.testset.data, self.testset.target)
-            if k != 'all':
-                trainset.selectBestFeatures(self.chisquared, k)
-                testset.selectBestFeatures(self.chisquared, k, fit=False)
-            algorithms = [
-                # PerceptronAlgorithm(trainset, testset),
-                MultinomialNBAlgorithm(trainset, testset),
-                RandomForestAlgorithm(trainset, testset),
-                SVMAlgorithm(trainset, testset),
-                MLPAlgorithm(trainset, testset)
-            ]
-            for alg in algorithms:
-                self.log.info(
-                    'running {:s} with {} features'.format(alg.name, k))
-                report = alg.run()
-                filename = '{:s}_{}.txt'.format(alg.name, k)
-                with open(
-                    os.path.join(self.outdir, filename),
-                    'w', encoding='utf8'
-                ) as fout:
-                    print(report, file=fout)
-                    self.log.info('report written to {}'.format(filename))
-                    # self._plotReport(report, alg, k)
+        trainset = Dataset(self.trainset.data, self.trainset.target)
+        testset = Dataset(self.testset.data, self.testset.target)
+        algorithms = [
+            PerceptronAlgorithm(trainset, testset),
+            MultinomialNBAlgorithm(trainset, testset),
+            RandomForestAlgorithm(trainset, testset, self.processes),
+            SVMAlgorithm(trainset, testset, self.processes),
+            MLPAlgorithm(trainset, testset)
+        ]
+        for alg in algorithms:
+            self.log.info('running {:s}'.format(alg.name))
+            report = alg.run()
+            filename = '{:s}.txt'.format(alg.name)
+            with open(
+                os.path.join(self.outdir, filename),
+                'w', encoding='utf8'
+            ) as fout:
+                print(report, file=fout)
+                self.log.info('report written to {}'.format(filename))
         self.log.info('classify job completed')

@@ -69,7 +69,7 @@ class UnsupervisedAlgorithm(LearningAlgorithm):
 
     def run(self):
         X = self.dataset
-        self.log.info('starting {} clustering'.format(self.name))
+        self.log.info('{} clustering started'.format(self.name))
         self.algorithm.fit(X.data)
         self.log.info(
             '{} clustering completed - computing scores'.format(self.name))
@@ -85,7 +85,7 @@ class UnsupervisedAlgorithm(LearningAlgorithm):
 
 class KMeansAlgorithm(UnsupervisedAlgorithm):
 
-    def __init__(self, dataset, runs=10):
+    def __init__(self, dataset, jobs, runs=10):
         UnsupervisedAlgorithm.__init__(
             self,
             'k-means',
@@ -93,7 +93,7 @@ class KMeansAlgorithm(UnsupervisedAlgorithm):
                 n_clusters=numpy.unique(dataset.target).shape[0],
                 n_init=runs,
                 max_iter=100,
-                verbose=False
+                n_jobs=jobs
             ),
             dataset
         )
@@ -104,21 +104,21 @@ class AffinityPropagationAlgorithm(UnsupervisedAlgorithm):
     def __init__(self, dataset):
         UnsupervisedAlgorithm.__init__(
             self,
-            'affinity-propagation',
-            AffinityPropagation(
-                verbose=False
-            ),
+            'affinity propagation',
+            AffinityPropagation(),
             dataset
         )
 
 
 class DBScanAlgorithm(UnsupervisedAlgorithm):
 
-    def __init__(self, dataset):
+    def __init__(self, dataset, jobs):
         UnsupervisedAlgorithm.__init__(
             self,
             'dbscan',
-            DBSCAN(),
+            DBSCAN(
+                n_jobs=jobs
+            ),
             dataset
         )
 
@@ -133,7 +133,8 @@ class SupervisedAlgorithm(LearningAlgorithm):
         self.testset = testset
 
     def run(self):
-        self.log.info('starting {:s}'.format(self.name))
+        self.log.info('{:s} started'.format(self.name))
+        self.log.info('running {:s} on trainset'.format(self.name))
         self.algorithm.fit(self.trainset.data, self.trainset.target)
         self.log.info('{:s} training completed'.format(self.name))
         self.log.info('running {:s} on testset'.format(self.name))
@@ -152,7 +153,6 @@ class PerceptronAlgorithm(SupervisedAlgorithm):
             'perceptron',
             Perceptron(
                 n_iter=50,
-                verbose=0
             ),
             trainset,
             testset
@@ -175,13 +175,12 @@ class MultinomialNBAlgorithm(SupervisedAlgorithm):
 
 class RandomForestAlgorithm(SupervisedAlgorithm):
 
-    def __init__(self, trainset, testset):
+    def __init__(self, trainset, testset, jobs):
         SupervisedAlgorithm.__init__(
             self,
             'randomforest',
             RandomForestClassifier(
-                min_samples_leaf=20,
-                verbose=0
+                n_jobs=jobs
             ),
             trainset,
             testset
@@ -190,18 +189,17 @@ class RandomForestAlgorithm(SupervisedAlgorithm):
 
 class SVMAlgorithm(SupervisedAlgorithm):
 
-    def __init__(self, trainset, testset):
+    def __init__(self, trainset, testset, jobs):
         SupervisedAlgorithm.__init__(
             self,
             'svm',
             OneVsRestClassifier(
                 BaggingClassifier(
                     SVC(
-                        class_weight='balance',
-                        tol=0.05,
-                        verbose=False
+                        tol=0.05
                     ),
-                    max_samples=0.1
+                    max_samples=0.1,
+                    n_jobs=jobs
                 )
             ),
             trainset,
@@ -220,7 +218,6 @@ class MLPAlgorithm(SupervisedAlgorithm):
                 alpha=1e-5,
                 hidden_layer_sizes=(5, 2),
                 random_state=1,
-                verbose=False
             ),
             trainset,
             testset

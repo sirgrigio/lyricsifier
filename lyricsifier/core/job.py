@@ -249,7 +249,7 @@ class ClassifyJob():
                 trainset.selectBestFeatures(self.chisquared, k)
                 testset.selectBestFeatures(self.chisquared, k, fit=False)
             algorithms = [
-                PerceptronAlgorithm(trainset, testset),
+                # PerceptronAlgorithm(trainset, testset),
                 MultinomialNBAlgorithm(trainset, testset),
                 RandomForestAlgorithm(trainset, testset),
                 SVMAlgorithm(trainset, testset),

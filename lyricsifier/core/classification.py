@@ -5,8 +5,10 @@ import random
 from abc import ABC, abstractmethod
 from sklearn import metrics
 from sklearn.cluster import AffinityPropagation, KMeans, DBSCAN
-from sklearn.ensemble import RandomForestClassifier
+from sklearn.ensemble import \
+    BaggingClassifier, RandomForestClassifier
 from sklearn.linear_model import Perceptron
+from sklearn.multiclass import OneVsRestClassifier
 from sklearn.naive_bayes import MultinomialNB
 from sklearn.neural_network import MLPClassifier
 from sklearn.svm import SVC
@@ -91,7 +93,7 @@ class KMeansAlgorithm(UnsupervisedAlgorithm):
                 n_clusters=numpy.unique(dataset.target).shape[0],
                 n_init=runs,
                 max_iter=100,
-                verbose=True
+                verbose=False
             ),
             dataset
         )
@@ -104,7 +106,7 @@ class AffinityPropagationAlgorithm(UnsupervisedAlgorithm):
             self,
             'affinity-propagation',
             AffinityPropagation(
-                verbose=True
+                verbose=False
             ),
             dataset
         )
@@ -150,7 +152,7 @@ class PerceptronAlgorithm(SupervisedAlgorithm):
             'perceptron',
             Perceptron(
                 n_iter=50,
-                verbose=1
+                verbose=0
             ),
             trainset,
             testset
@@ -178,7 +180,8 @@ class RandomForestAlgorithm(SupervisedAlgorithm):
             self,
             'randomforest',
             RandomForestClassifier(
-                verbose=1
+                min_samples_leaf=20,
+                verbose=0
             ),
             trainset,
             testset
@@ -191,9 +194,15 @@ class SVMAlgorithm(SupervisedAlgorithm):
         SupervisedAlgorithm.__init__(
             self,
             'svm',
-            SVC(
-                tol=0.05,
-                verbose=True
+            OneVsRestClassifier(
+                BaggingClassifier(
+                    SVC(
+                        class_weight='balance',
+                        tol=0.05,
+                        verbose=False
+                    ),
+                    max_samples=0.1
+                )
             ),
             trainset,
             testset
@@ -211,7 +220,7 @@ class MLPAlgorithm(SupervisedAlgorithm):
                 alpha=1e-5,
                 hidden_layer_sizes=(5, 2),
                 random_state=1,
-                verbose=True
+                verbose=False
             ),
             trainset,
             testset

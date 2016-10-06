@@ -4,7 +4,6 @@ import logging
 import os
 import pickle
 import tempfile
-from sklearn.feature_selection import SelectKBest, chi2
 from lyricsifier.core.classification \
     import Dataset, KMeansAlgorithm, DBScanAlgorithm, AffinityPropagation, \
     PerceptronAlgorithm, MultinomialNBAlgorithm, RandomForestAlgorithm, \

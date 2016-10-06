@@ -178,13 +178,20 @@ class ClusterController(ArgparseController):
                 action='store',
                 default=1)
              ),
+            (['-d', '--dump'],
+             dict(
+                help='a file to store the dataset dump',
+                action='store',
+                default=None)
+             ),
         ]
     )
     def cluster(self):
         job = ClusterJob(
             self.app.pargs.lyrics_file,
             self.app.pargs.tags_file,
-            processes=int(self.app.pargs.processes)
+            processes=int(self.app.pargs.processes),
+            dump=self.app.pargs.dump
         )
         job.start()
 

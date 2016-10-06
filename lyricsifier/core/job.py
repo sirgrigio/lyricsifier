@@ -2,6 +2,7 @@
 import csv
 import logging
 import os
+import pickle
 import tempfile
 from sklearn.feature_selection import SelectKBest, chi2
 from lyricsifier.core.classification \
@@ -163,10 +164,11 @@ class TagJob:
 
 class ClusterJob():
 
-    def __init__(self, lyrics_file, tags_file, processes=1):
+    def __init__(self, lyrics_file, tags_file, processes=1, dump=None):
         self.flyrics = lyrics_file
         self.ftags = tags_file
         self.processes = processes
+        self.dump = dump
         self.vectorizer = LyricsVectorizer()
         self.log = logging.getLogger(__name__)
 
@@ -185,10 +187,21 @@ class ClusterJob():
                 labels.append(tag)
         return Dataset(data, labels)
 
+    def _loadDataset(self):
+        if os.path.isfile(self.dump):
+            with open(self.dump, 'r', encoding='utf8') as du:
+                return pickle.load(du)
+        else:
+            dataset = self._buildDataset()
+            dataset.vectorize(self.vectorizer)
+            if self.dump:
+                with open(self.dump, 'r', encoding='utf8') as du:
+                    pickle.dump(dataset, du)
+            return dataset
+
     def start(self):
         self.log.info('setting up')
-        dataset = self._buildDataset()
-        dataset.vectorize(self.vectorizer)
+        dataset = self._loadDataset()
         algorithms = [
             KMeansAlgorithm(dataset, self.processes),
             AffinityPropagation(dataset),
@@ -201,7 +214,7 @@ class ClusterJob():
 
 class ClassifyJob():
 
-    def __init__(self, lyrics_file, tags_file, outdir, processes=1):
+    def __init__(self, lyrics_file, tags_file, outdir, processes=1, dump=None):
         self.flyrics = lyrics_file
         self.ftags = tags_file
         self.outdir = outdir

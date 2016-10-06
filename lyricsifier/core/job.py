@@ -187,13 +187,16 @@ class ClusterJob():
         return Dataset(data, labels)
 
     def _loadDataset(self):
-        if os.path.isfile(self.dump):
+        if os.path.exists(self.dump):
+            self.log.info(
+                'loading dataset from dump file {}'.format(self.dump))
             with open(self.dump, 'r', encoding='utf8') as du:
                 return pickle.load(du)
         else:
             dataset = self._buildDataset()
             dataset.vectorize(self.vectorizer)
             if self.dump:
+                self.log.info('dumping dataset to {}'.format(self.dump))
                 with open(self.dump, 'r', encoding='utf8') as du:
                     pickle.dump(dataset, du)
             return dataset
@@ -201,6 +204,7 @@ class ClusterJob():
     def start(self):
         self.log.info('setting up')
         dataset = self._loadDataset()
+        self.log.info('dataset loaded')
         algorithms = [
             KMeansAlgorithm(dataset, self.processes),
             AffinityPropagation(dataset),

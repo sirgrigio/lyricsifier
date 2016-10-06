@@ -1,7 +1,8 @@
 from cement.core.foundation import CementApp
 from cement.ext.ext_argparse import ArgparseController, expose
 from lyricsifier.core.crawler import MetroLyricsCrawler
-from lyricsifier.core.job import ClassifyJob, ClusterJob, ExtractJob, TagJob
+from lyricsifier.core.job \
+    import ClassifyJob, ClusterJob, ExtractJob, TagJob, VectorizeJob
 from lyricsifier.cli.utils import logging
 
 
@@ -160,16 +161,11 @@ class ClusterController(ArgparseController):
         pass
 
     @expose(
-        help="tag the given tracks",
+        help="cluster the dataset",
         arguments=[
-            (['lyrics_file'],
+            (['dataset_file'],
              dict(
-                help='the file containg tracks lyrics',
-                action='store')
-             ),
-            (['tags_file'],
-             dict(
-                help='the file containg tracks tags',
+                help='the file containg the dataset',
                 action='store')
              ),
             (['-p', '--processes'],
@@ -178,20 +174,12 @@ class ClusterController(ArgparseController):
                 action='store',
                 default=1)
              ),
-            (['-d', '--dump'],
-             dict(
-                help='a file to store the dataset dump',
-                action='store',
-                default=None)
-             ),
         ]
     )
     def cluster(self):
         job = ClusterJob(
-            self.app.pargs.lyrics_file,
-            self.app.pargs.tags_file,
+            self.app.pargs.dataset_file,
             processes=int(self.app.pargs.processes),
-            dump=self.app.pargs.dump
         )
         job.start()
 
@@ -206,16 +194,16 @@ class ClassifyController(ArgparseController):
         pass
 
     @expose(
-        help="tag the given tracks",
+        help="classify the testset upon training on the trainset",
         arguments=[
-            (['lyrics_file'],
+            (['trainset_file'],
              dict(
-                help='the file containg tracks lyrics',
+                help='the file containg the trainset',
                 action='store')
              ),
-            (['tags_file'],
+            (['testset_file'],
              dict(
-                help='the file containg tracks tags',
+                help='the file containg the testset',
                 action='store')
              ),
             (['-r', '--report-dir'],
@@ -235,10 +223,58 @@ class ClassifyController(ArgparseController):
     )
     def classify(self):
         job = ClassifyJob(
-            self.app.pargs.lyrics_file,
-            self.app.pargs.tags_file,
+            self.app.pargs.trainset_file,
+            self.app.pargs.testset_file,
             self.app.pargs.report_dir,
             processes=int(self.app.pargs.processes)
+        )
+        job.start()
+
+
+class VectorizeController(ArgparseController):
+    class Meta:
+        label = 'vectorize'
+        stacked_on = 'base'
+
+    @expose(hide=True)
+    def default(self):
+        pass
+
+    @expose(
+        help="create a vectorize dataset",
+        arguments=[
+            (['lyrics_file'],
+             dict(
+                help='the file containg lyrics',
+                action='store')
+             ),
+            (['tasg_file'],
+             dict(
+                help='the file containg tags',
+                action='store')
+             ),
+            (['-o', '--outdir'],
+             dict(
+                help='''the directory to save the datasets to
+                        (default ./target/datasets/)''',
+                action='store',
+                default='./target/datasets/')
+             ),
+            (['-s', '--split'],
+             dict(
+                help='''wheter to create or not both trainset and testset
+                        (default False)''',
+                action='store_true',
+                default=False)
+             ),
+        ]
+    )
+    def vectorize(self):
+        job = VectorizeJob(
+            self.app.pargs.lyrics_file,
+            self.app.pargs.tasg_file,
+            self.app.pargs.outdir,
+            split=self.app.pargs.split
         )
         job.start()
 
@@ -249,7 +285,8 @@ class LyricsifierApp(CementApp):
         arguments_override_config = True
         base_controller = 'base'
         handlers = [BaseController, ClassifyController, ClusterController,
-                    CrawlController, ExtractController, TagController]
+                    CrawlController, ExtractController, TagController,
+                    VectorizeController]
 
 
 def main():

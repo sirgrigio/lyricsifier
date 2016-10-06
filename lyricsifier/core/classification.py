@@ -20,16 +20,11 @@ class Dataset():
         self.name = name
         self.data = data
         self.target = labels
-        self.log = logging.getLogger(__name__)
 
-    def vectorize(self, vectorizer, fit=True):
-        self.log.info('preprocessing {:s}'.format(self.name))
-        self.data = vectorizer.vectorize(self.data, fit=fit)
-
-    def selectBestFeatures(self, selector, k, fit=True):
-        self.log.info('extracting best {} features'.format(k))
-        self.log.info('using dataset to fit: {}'.format(fit))
-        self.data = selector.fit_transform(self.data, self.target) if fit else selector.transform(self.data)
+    def vectorize(dataset, vectorizer, fit=True):
+        log = logging.getLogger(__name__)
+        log.info('preprocessing {:s}'.format(dataset.name))
+        dataset.data = vectorizer.vectorize(dataset.data, fit=fit)
 
     def split(dataset, percentage):
         log = logging.getLogger(__name__)

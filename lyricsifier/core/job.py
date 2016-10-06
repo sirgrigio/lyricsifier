@@ -161,15 +161,20 @@ class TagJob:
         self.log.info('tag job completed')
 
 
-class ClusterJob():
+class VectorizeJob():
 
-    def __init__(self, lyrics_file, tags_file, processes=1, dump=None):
+    def __init__(self, lyrics_file, tags_file, outdir, split=False):
         self.flyrics = lyrics_file
         self.ftags = tags_file
-        self.processes = processes
-        self.dump = dump
+        self.outdir = outdir
+        self.split = split
         self.vectorizer = LyricsVectorizer()
         self.log = logging.getLogger(__name__)
+
+    def _setUp(self):
+        self.log.info('setting up')
+        file.mkdirs(self.outdir, safe=True)
+        self.log.info('creating trainset and testset: {}'.format(self.split))
 
     def _buildDataset(self):
         data = []
@@ -186,28 +191,50 @@ class ClusterJob():
                 labels.append(tag)
         return Dataset(data, labels)
 
-    def _loadDataset(self):
-        if os.path.exists(self.dump):
-            self.log.info(
-                'loading dataset from dump file {}'.format(self.dump))
-            with open(self.dump, 'r', encoding='utf8') as du:
-                return pickle.load(du)
+    def _dump(self, dataset):
+        filename = os.path.join(self.outdir, dataset.name + '.obj')
+        self.log.info('dumping {}'.format(dataset.name))
+        with open(filename, 'wb') as fobj:
+            pickle.dump(dataset, fobj)
+        self.log.info('{} dumped to file {}'.format(dataset.name, filename))
+
+    def start(self):
+        self._setUp()
+        dataset = self._buildDataset()
+        self.log.info('dataset loaded')
+        if self.split:
+            trainset, testset = Dataset.split(dataset, 0.8)
+            Dataset.vectorize(trainset, self.vectorizer)
+            Dataset.vectorize(testset, self.vectorizer, fit=False)
+            self._dump(trainset)
+            self._dump(testset)
         else:
-            dataset = self._buildDataset()
-            dataset.vectorize(self.vectorizer)
-            if self.dump:
-                self.log.info('dumping dataset to {}'.format(self.dump))
-                with open(self.dump, 'w', encoding='utf8') as du:
-                    pickle.dump(dataset, du)
-            return dataset
+            Dataset.vectorize(dataset, self.vectorizer)
+            self._dump(dataset)
+        self.log.info('vectorize job completed')
+
+
+class ClusterJob():
+
+    def __init__(self, dataset_file, processes=1):
+        self.fdataset = dataset_file
+        self.processes = processes
+        self.vectorizer = LyricsVectorizer()
+        self.log = logging.getLogger(__name__)
+
+    def _loadDataset(self):
+        self.log.info(
+            'loading dataset from dump file {}'.format(self.fdataset))
+        with open(self.fdataset, 'rb') as du:
+            return pickle.load(du)
 
     def start(self):
         self.log.info('setting up')
         dataset = self._loadDataset()
         self.log.info('dataset loaded')
         algorithms = [
-            KMeansAlgorithm(dataset, self.processes),
-            AffinityPropagation(dataset),
+            # KMeansAlgorithm(dataset, self.processes),
+            # AffinityPropagation(dataset),
             DBScanAlgorithm(dataset, self.processes)
         ]
         for alg in algorithms:
@@ -217,45 +244,30 @@ class ClusterJob():
 
 class ClassifyJob():
 
-    def __init__(self, lyrics_file, tags_file, outdir, processes=1, dump=None):
-        self.flyrics = lyrics_file
-        self.ftags = tags_file
+    def __init__(self, trainset_file, testset_file, outdir, processes=1):
+        self.ftrainset = trainset_file
+        self.ftestset = testset_file
         self.outdir = outdir
         self.processes = processes
-        self.vectorizer = LyricsVectorizer()
         self.log = logging.getLogger(__name__)
-
-    def _buildDataset(self):
-        data = []
-        labels = []
-        ftags_rows = csvutils.load(self.ftags)[0]
-        tags = {row['trackid']: row['tag'] for row in ftags_rows}
-        flyrics_rows = csvutils.load(self.flyrics)[0]
-        for row in flyrics_rows:
-            trackid = row['trackid']
-            lyrics = row['lyrics']
-            tag = tags.get(trackid, None)
-            if tag:
-                data.append(lyrics)
-                labels.append(tag)
-        return Dataset(data, labels)
 
     def _setUp(self):
         self.log.info('setting up')
         file.mkdirs(self.outdir, safe=True)
-        dataset = self._buildDataset()
-        self.trainset, self.testset = Dataset.split(dataset, 0.8)
-        self.trainset.vectorize(self.vectorizer)
-        self.testset.vectorize(self.vectorizer, fit=False)
+
+    def _loadDataset(self, file):
+        self.log.info('loading dataset from dump file {}'.format(file))
+        with open(file, 'rb') as du:
+            return pickle.load(du)
 
     def start(self):
         self._setUp()
-        trainset = Dataset(self.trainset.data, self.trainset.target)
-        testset = Dataset(self.testset.data, self.testset.target)
+        trainset = self._loadDataset(self.ftrainset)
+        testset = self._loadDataset(self.ftestset)
         algorithms = [
-            PerceptronAlgorithm(trainset, testset),
-            MultinomialNBAlgorithm(trainset, testset),
-            RandomForestAlgorithm(trainset, testset, self.processes),
+            # PerceptronAlgorithm(trainset, testset),
+            # MultinomialNBAlgorithm(trainset, testset),
+            # RandomForestAlgorithm(trainset, testset, self.processes),
             SVMAlgorithm(trainset, testset, self.processes),
             MLPAlgorithm(trainset, testset)
         ]

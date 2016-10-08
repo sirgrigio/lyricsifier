@@ -2,16 +2,15 @@ import logging
 import math
 import numpy
 import random
+import time
 from abc import ABC, abstractmethod
 from sklearn import metrics
 from sklearn.cluster import AffinityPropagation, KMeans, DBSCAN
-from sklearn.ensemble import \
-    BaggingClassifier, RandomForestClassifier
+from sklearn.ensemble import RandomForestClassifier
 from sklearn.linear_model import Perceptron
-from sklearn.multiclass import OneVsRestClassifier
 from sklearn.naive_bayes import MultinomialNB
 from sklearn.neural_network import MLPClassifier
-from sklearn.svm import SVC
+from sklearn.svm import LinearSVC
 
 
 class Dataset():
@@ -112,6 +111,8 @@ class DBScanAlgorithm(UnsupervisedAlgorithm):
             self,
             'dbscan',
             DBSCAN(
+                eps=0.3,
+                min_samples=5,
                 n_jobs=jobs
             ),
             dataset
@@ -130,10 +131,17 @@ class SupervisedAlgorithm(LearningAlgorithm):
     def run(self):
         self.log.info('{:s} started'.format(self.name))
         self.log.info('running {:s} on trainset'.format(self.name))
+        t1 = time.time()
         self.algorithm.fit(self.trainset.data, self.trainset.target)
-        self.log.info('{:s} training completed'.format(self.name))
+        train_time = time.time() - t1
+        self.log.info(
+            '{:s} training completed in {:.3f}s'.format(self.name, train_time))
         self.log.info('running {:s} on testset'.format(self.name))
+        t2 = time.time()
         predictions = self.algorithm.predict(self.testset.data)
+        test_time = time.time() - t2
+        self.log.info(
+            '{:s} test completed in {:.3f}s'.format(self.name, test_time))
         accuracy = metrics.accuracy_score(self.testset.target, predictions)
         self.log.info(
             '{:s} accuracy score: {:.3f}'.format(self.name, accuracy))
@@ -188,15 +196,16 @@ class SVMAlgorithm(SupervisedAlgorithm):
         SupervisedAlgorithm.__init__(
             self,
             'svm',
-            OneVsRestClassifier(
-                BaggingClassifier(
-                    SVC(
-                        tol=0.05
-                    ),
-                    max_samples=0.1,
-                    n_jobs=jobs
-                )
-            ),
+            # OneVsRestClassifier(
+            #     BaggingClassifier(
+            #         SVC(
+            #             tol=0.05
+            #         ),
+            #         max_samples=0.1,
+            #         n_jobs=jobs
+            #     )
+            # ),
+            LinearSVC(),
             trainset,
             testset
         )

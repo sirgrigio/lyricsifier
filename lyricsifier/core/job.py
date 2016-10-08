@@ -233,8 +233,8 @@ class ClusterJob():
         dataset = self._loadDataset()
         self.log.info('dataset loaded')
         algorithms = [
-            # KMeansAlgorithm(dataset, self.processes),
-            # AffinityPropagation(dataset),
+            KMeansAlgorithm(dataset, self.processes),
+            AffinityPropagation(dataset),
             DBScanAlgorithm(dataset, self.processes)
         ]
         for alg in algorithms:
@@ -265,9 +265,9 @@ class ClassifyJob():
         trainset = self._loadDataset(self.ftrainset)
         testset = self._loadDataset(self.ftestset)
         algorithms = [
-            # PerceptronAlgorithm(trainset, testset),
-            # MultinomialNBAlgorithm(trainset, testset),
-            # RandomForestAlgorithm(trainset, testset, self.processes),
+            PerceptronAlgorithm(trainset, testset),
+            MultinomialNBAlgorithm(trainset, testset),
+            RandomForestAlgorithm(trainset, testset, self.processes),
             SVMAlgorithm(trainset, testset, self.processes),
             MLPAlgorithm(trainset, testset)
         ]

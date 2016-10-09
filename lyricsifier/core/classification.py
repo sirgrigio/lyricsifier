@@ -7,10 +7,12 @@ from abc import ABC, abstractmethod
 from sklearn import metrics
 from sklearn.cluster import AffinityPropagation, KMeans, DBSCAN
 from sklearn.ensemble import RandomForestClassifier
+from sklearn.feature_selection import SelectFromModel
 from sklearn.linear_model import Perceptron
 from sklearn.naive_bayes import MultinomialNB
 from sklearn.neural_network import MLPClassifier
 from sklearn.svm import LinearSVC
+from sklearn.pipeline import Pipeline
 
 
 class Dataset():
@@ -196,15 +198,6 @@ class SVMAlgorithm(SupervisedAlgorithm):
         SupervisedAlgorithm.__init__(
             self,
             'svm',
-            # OneVsRestClassifier(
-            #     BaggingClassifier(
-            #         SVC(
-            #             tol=0.05
-            #         ),
-            #         max_samples=0.1,
-            #         n_jobs=jobs
-            #     )
-            # ),
             LinearSVC(),
             trainset,
             testset
@@ -217,12 +210,17 @@ class MLPAlgorithm(SupervisedAlgorithm):
         SupervisedAlgorithm.__init__(
             self,
             'mlp',
-            MLPClassifier(
-                solver='adam',
-                alpha=1e-5,
-                hidden_layer_sizes=(5, 2),
-                random_state=1,
-            ),
+            Pipeline(
+                [('feature_selection',
+                    SelectFromModel(
+                        LinearSVC(C=0.01, penalty='l1', dual=False))),
+                 ('classification',
+                    MLPClassifier(
+                        solver='adam',
+                        hidden_layer_sizes=(5,),
+                        random_state=1,
+                        max_iter=100
+                    ))]),
             trainset,
             testset
         )

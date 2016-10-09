@@ -213,12 +213,6 @@ class ClassifyController(ArgparseController):
                 action='store',
                 default='./target/report/')
              ),
-            (['-p', '--processes'],
-             dict(
-                help='number of parallel processes (default 1)',
-                action='store',
-                default=1)
-             ),
         ]
     )
     def classify(self):
@@ -226,7 +220,6 @@ class ClassifyController(ArgparseController):
             self.app.pargs.trainset_file,
             self.app.pargs.testset_file,
             self.app.pargs.report_dir,
-            processes=int(self.app.pargs.processes)
         )
         job.start()
 

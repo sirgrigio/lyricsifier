@@ -123,10 +123,19 @@ class DBScanAlgorithm(UnsupervisedAlgorithm):
 
 class SupervisedAlgorithm(LearningAlgorithm):
 
-    def __init__(self, name, algorithm, trainset, testset):
+    def __init__(self, name, algorithm, trainset, testset,
+                 feature_selection=False):
         LearningAlgorithm.__init__(self)
-        self.name = name
+        self.name = (name if not feature_selection
+                     else name + '_feature-selection')
         self.algorithm = algorithm
+        if feature_selection:
+            sel = SelectFromModel(
+                LinearSVC(C=0.01, penalty='l1', dual=False)
+            )
+            self.algorithm = Pipeline(
+                [('feature_selection', sel), ('classification', algorithm)]
+            )
         self.trainset = trainset
         self.testset = testset
 
@@ -147,60 +156,62 @@ class SupervisedAlgorithm(LearningAlgorithm):
         accuracy = metrics.accuracy_score(self.testset.target, predictions)
         self.log.info(
             '{:s} accuracy score: {:.3f}'.format(self.name, accuracy))
+        f1_score = metrics.f1_score(
+            self.testset.target, predictions, average='weighted')
+        self.log.info(
+            '{:s} weighted f1 score: {:.3f}'.format(self.name, f1_score))
         return metrics.classification_report(self.testset.target, predictions)
 
 
 class PerceptronAlgorithm(SupervisedAlgorithm):
 
-    def __init__(self, trainset, testset):
+    def __init__(self, trainset, testset, feature_selection=False):
         SupervisedAlgorithm.__init__(
             self,
             'perceptron',
-            Perceptron(
-                n_iter=50,
-            ),
+            Perceptron(),
             trainset,
-            testset
+            testset,
+            feature_selection
         )
 
 
 class MultinomialNBAlgorithm(SupervisedAlgorithm):
 
-    def __init__(self, trainset, testset):
+    def __init__(self, trainset, testset, feature_selection=False):
         SupervisedAlgorithm.__init__(
             self,
-            'multinomialnb',
-            MultinomialNB(
-                alpha=0.01
-            ),
+            'multinomial-nb',
+            MultinomialNB(),
             trainset,
-            testset
+            testset,
+            feature_selection
         )
 
 
 class RandomForestAlgorithm(SupervisedAlgorithm):
 
-    def __init__(self, trainset, testset, jobs):
+    def __init__(self, trainset, testset, feature_selection=False):
         SupervisedAlgorithm.__init__(
             self,
-            'randomforest',
-            RandomForestClassifier(
-                n_jobs=jobs
-            ),
+            'random-forest',
+            RandomForestClassifier(),
             trainset,
-            testset
+            testset,
+            feature_selection
         )
 
 
 class SVMAlgorithm(SupervisedAlgorithm):
 
-    def __init__(self, trainset, testset, jobs):
+    def __init__(self, trainset, testset, feature_selection=False):
         SupervisedAlgorithm.__init__(
             self,
             'svm',
             LinearSVC(),
             trainset,
-            testset
+            testset,
+            feature_selection
         )
 
 
@@ -210,17 +221,8 @@ class MLPAlgorithm(SupervisedAlgorithm):
         SupervisedAlgorithm.__init__(
             self,
             'mlp',
-            Pipeline(
-                [('feature_selection',
-                    SelectFromModel(
-                        LinearSVC(C=0.01, penalty='l1', dual=False))),
-                 ('classification',
-                    MLPClassifier(
-                        solver='adam',
-                        hidden_layer_sizes=(5,),
-                        random_state=1,
-                        max_iter=100
-                    ))]),
+            MLPClassifier(),
             trainset,
-            testset
+            testset,
+            feature_selection=True
         )

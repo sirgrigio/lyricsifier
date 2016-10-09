@@ -244,11 +244,10 @@ class ClusterJob():
 
 class ClassifyJob():
 
-    def __init__(self, trainset_file, testset_file, outdir, processes=1):
+    def __init__(self, trainset_file, testset_file, outdir):
         self.ftrainset = trainset_file
         self.ftestset = testset_file
         self.outdir = outdir
-        self.processes = processes
         self.log = logging.getLogger(__name__)
 
     def _setUp(self):
@@ -267,9 +266,10 @@ class ClassifyJob():
         algorithms = [
             PerceptronAlgorithm(trainset, testset),
             MultinomialNBAlgorithm(trainset, testset),
-            RandomForestAlgorithm(trainset, testset, self.processes),
-            SVMAlgorithm(trainset, testset, self.processes),
-            MLPAlgorithm(trainset, testset)
+            RandomForestAlgorithm(trainset, testset),
+            RandomForestAlgorithm(trainset, testset, feature_selection=True),
+            SVMAlgorithm(trainset, testset),
+            MLPAlgorithm(trainset, testset),
         ]
         for alg in algorithms:
             self.log.info('running {:s}'.format(alg.name))

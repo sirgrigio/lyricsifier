@@ -10,7 +10,7 @@ def show_values(pc, fmt="%.2f", **kw):
     '''
     from itertools import izip
     pc.update_scalarmappable()
-    ax = pc.get_axes()
+    ax = pc.axes
     for p, color, value in izip(pc.get_paths(), pc.get_facecolors(), pc.get_array()):
         x, y = p.vertices[:-2, :].mean(0)
         if np.all(color[:3] > 0.5):
@@ -41,9 +41,8 @@ def heatmap(AUC, title, xlabel, ylabel, xticklabels, yticklabels, figure_width=4
     '''
     # Plot it out
     fig, ax = plt.subplots()
-    # c = ax.pcolor(AUC, edgecolors='k', linestyle= 'dashed', linewidths=0.2, cmap='RdBu', vmin=0.0, vmax=1.0)
-    c = ax.pcolor(AUC, edgecolors='k', linestyle='dashed',
-                  linewidths=0.2, cmap=cmap)
+    c = ax.pcolor(AUC, edgecolors='k', linestyle='solid',
+                  linewidths=0.2, cmap=cmap, vmin=0.0, vmax=1.0)
     # put the major ticks at the middle of each cell
     ax.set_yticks(np.arange(AUC.shape[0]) + 0.5, minor=False)
     ax.set_xticks(np.arange(AUC.shape[1]) + 0.5, minor=False)

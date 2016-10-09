@@ -266,7 +266,6 @@ class ClassifyJob():
         algorithms = [
             PerceptronAlgorithm(trainset, testset),
             MultinomialNBAlgorithm(trainset, testset),
-            RandomForestAlgorithm(trainset, testset),
             RandomForestAlgorithm(trainset, testset, feature_selection=True),
             SVMAlgorithm(trainset, testset),
             MLPAlgorithm(trainset, testset),

@@ -182,7 +182,7 @@ class MultinomialNBAlgorithm(SupervisedAlgorithm):
         SupervisedAlgorithm.__init__(
             self,
             'multinomial-nb',
-            MultinomialNB(),
+            MultinomialNB(alpha=1e-05),
             trainset,
             testset,
             feature_selection

@@ -19,7 +19,6 @@ setup(
     entry_points={'console_scripts': ['lyricsifier=lyricsifier.cli.app:main']},
     classifiers=[
         'Development Status :: 4 - Beta',
-        'License :: OSI Approved :: GNU Affero General Public License v3',
-        'Programming Language :: Python :: 2',
+        'Programming Language :: Python :: 3',
     ]
 )

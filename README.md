@@ -14,7 +14,7 @@ It allows to:
   * see `lyricsifier classify --help`;
 
 ## Usage
-```bash
+```
 $ lyricsifier --help
 usage: lyricsifier [-h] [--debug] [--quiet]
                    {default,classify,cluster,crawl,extract,tag,vectorize} ...

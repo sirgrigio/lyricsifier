@@ -20,7 +20,6 @@ setup(
     classifiers=[
         'Development Status :: 4 - Beta',
         'License :: OSI Approved :: GNU Affero General Public License v3',
-        'Operating System :: MacOS',
         'Programming Language :: Python :: 2',
     ]
 )
